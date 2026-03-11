@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iftar Tracker · Ramadan Dashboard</title>
+    <!-- Font Awesome 6 (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter + Cairo for festive touch -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Ramadan inspired palette */
+        :root {
+            --bg-light: #f9fafb;
+            --bg-dark: #0f2e1f;
+            --card-white: rgba(255, 255, 255, 0.85);
+            --green-deep: #0b4f2e;
+            --green-gold: #b88b1f;
+            --gold: #d4af37;
+            --gold-light: #f8e3a7;
+            --emerald: #1e7b4b;
+            --shadow: 0 20px 30px -10px rgba(0, 40, 10, 0.2);
+            --text-dark: #1f2937;
+            --text-soft: #374151;
+            --border-light: #e9e9e9;
+            --status-paid: #10b981;
+            --status-loading: #f59e0b;
+            --status-no: #b91c1c;
+        }
+
+        /* dark mode class */
+        body.dark {
+            --bg-light: #0a1e14;
+            --card-white: rgba(25, 45, 30, 0.9);
+            --text-dark: #f0f3e8;
+            --text-soft: #d1d5c7;
+            --border-light: #2d4a33;
+            --shadow: 0 20px 30px -10px #00000055;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+            padding: 1.5rem;
+            backdrop-filter: blur(2px);
+        }
+
+        /* glassmorphism base */
+        .glass-card {
+            background: var(--card-white);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 32px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s;
+        }
+        .glass-card:hover {
+            box-shadow: 0 25px 40px -12px #1e4b2e;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+        .title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(145deg, #0b4f2e, #b88b1f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .title p {
+            font-size: 1rem;
+            color: var(--gold);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .title p i {
+            color: var(--green-gold);
+        }
+
+        .mode-badge {
+            background: var(--green-deep);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -8px #0b4f2e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #f3d371;
+        }
+        .mode-badge i {
+            font-size: 1.3rem;
+        }
+
+        /* stat cards */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-item {
+            padding: 1.5rem 1rem;
+            border-radius: 32px;
+            text-align: center;
+            background: var(--card-white);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--gold-light);
+            transition: all 0.3s;
+        }
+        .stat-item i {
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-soft);
+        }
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--green-deep);
+        }
+        body.dark .stat-number {
+            color: var(--gold-light);
+        }
+
+        /* admin bar */
+        .admin-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0 1.8rem 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .role-tag {
+            background: var(--green-deep);
+            border-radius: 60px;
+            padding: 0.5rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--gold);
+        }
+        .admin-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            color: var(--green-deep);
+            box-shadow: 0 8px 18px -8px #aaaaaa;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid var(--gold-light);
+        }
+        .btn-gold {
+            background: var(--gold);
+            color: #0a2e1a;
+            border: 1px solid #f5d773;
+        }
+        .btn-outline {
+            background: transparent;
+            backdrop-filter: blur(4px);
+            border: 1.5px solid var(--green-deep);
+            color: var(--green-deep);
+        }
+        body.dark .btn-outline {
+            color: var(--gold-light);
+            border-color: var(--gold);
+        }
+        .btn:hover {
+            transform: translateY(-4px);
+        }
+
+        /* table container */
+        .table-wrapper {
+            border-radius: 32px;
+            overflow-x: auto;
+            padding: 0.5rem;
+            background: var(--card-white);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--gold-light);
+            box-shadow: var(--shadow);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+            font-size: 0.95rem;
+        }
+        th {
+            text-align: left;
+            padding: 1.2rem 0.8rem 0.8rem 0.8rem;
+            color: var(--green-deep);
+            font-weight: 600;
+            border-bottom: 2px solid var(--gold);
+        }
+        td {
+            padding: 1rem 0.8rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .status-badge {
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+            text-align: center;
+            min-width: 80px;
+        }
+        .status-paid { background: #d1fae5; color: #065f46; }
+        .status-loading { background: #fed7aa; color: #92400e; }
+        .status-no { background: #fee2e2; color: #b91c1c; }
+
+        select, input[type="text"] {
+            padding: 0.5rem 0.8rem;
+            border-radius: 30px;
+            border: 1px solid var(--gold);
+            background: white;
+            font-weight: 500;
+            width: 100%;
+            max-width: 140px;
+        }
+        .notes-input {
+            max-width: 160px;
+        }
+
+        /* modal overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: 0.2s;
+        }
+        .modal-content {
+            background: var(--card-white);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 2.5rem 2rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 40px 60px -20px #1e3b2a;
+            border: 1px solid var(--gold);
+            text-align: center;
+        }
+        .modal-content h2 {
+            color: var(--green-deep);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal-content p {
+            margin-bottom: 2rem;
+            color: var(--text-soft);
+        }
+        .modal-input {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 60px;
+            border: 2px solid var(--gold-light);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+        .modal-close {
+            position: relative;
+            top: -15px;
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--green-deep);
+        }
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* responsive */
+        @media (max-width: 800px) {
+            .stat-grid { grid-template-columns: 1fr 1fr; }
+            .admin-bar { flex-direction: column; align-items: start; }
+        }
+        @media (max-width: 500px) {
+            .stat-grid { grid-template-columns: 1fr; }
+            .title h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard" id="dashboard">
+
+    <!-- modal (welcome popup) -->
+    <div class="modal-overlay" id="welcomeModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+            <i class="fas fa-star-and-crescent" style="font-size: 3rem; color: var(--gold);"></i>
+            <h2>🌙 أهلًا</h2>
+            <p>Welcome to the Iftar Party চান্দা Website</p>
+            <input type="password" class="modal-input" id="adminPasswordInput" placeholder="Admin password" value="">
+            <div class="modal-footer">
+                <button class="btn btn-gold" id="submitAdminBtn"><i class="fas fa-key"></i> Enter as admin</button>
+            </div>
+            <small style="display: block; margin-top: 15px; color: var(--text-soft)">(click X to continue as normal user)</small>
+        </div>
+    </div>
+
+    <!-- header -->
+    <div class="header-section">
+        <div class="title">
+            <h1><i class="fas fa-moon" style="color: var(--gold);"></i> Iftar Party চান্দা List</h1>
+            <p><i class="fas fa-lantern"></i> Ramadan Iftar Gathering · 400 BDT each</p>
+        </div>
+        <div class="mode-badge" id="darkModeToggle">
+            <i class="fas fa-sun" id="modeIcon"></i>
+            <span id="modeText">Light</span>
+        </div>
+    </div>
+
+    <!-- stats cards -->
+    <div class="stat-grid" id="statGrid">
+        <div class="stat-item"><i class="fas fa-users"></i><div class="stat-label">Total members</div><div class="stat-number" id="totalMembers">20</div></div>
+        <div class="stat-item"><i class="fas fa-check-circle"></i><div class="stat-label">Paid</div><div class="stat-number" id="totalPaid">0</div></div>
+        <div class="stat-item"><i class="fas fa-hourglass-half"></i><div class="stat-label">Pending</div><div class="stat-number" id="totalPending">0</div></div>
+        <div class="stat-item"><i class="fas fa-coins"></i><div class="stat-label">Collected (BDT)</div><div class="stat-number" id="totalCollected">0</div></div>
+    </div>
+
+    <!-- admin bar & actions -->
+    <div class="admin-bar">
+        <div class="role-tag" id="roleDisplay"><i class="fas fa-user"></i> Normal user (view only)</div>
+        <div class="admin-actions" id="adminActions">
+            <button class="btn btn-gold" id="saveChangesBtn"><i class="fas fa-save"></i> Save changes</button>
+            <button class="btn btn-outline" id="resetStatusBtn"><i class="fas fa-undo-alt"></i> Reset status</button>
+        </div>
+    </div>
+
+    <!-- table glass card -->
+    <div class="table-wrapper">
+        <table id="memberTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Amount (BDT)</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- js inject -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- member list ----------
+        const memberNames = [
+            "খালিদ বিন শামীম (আদি)", "প্রতীক দাস", "কাজী আরাফাত", "তানভীর আলম", "সাইফুর রহমান",
+            "নাঈম", "শিশির আহমেদ এমরান", "আব্দুল্লাহ", "ফাহাদ", "সাহিদুল",
+            "শেখ সাদ", "তানিম মোল্লা", "সাকিব মোল্লা", "তায়েফ আহমদ", "রিয়াদ",
+            "নিরব", "সাগর", "রাফি", "সামাদ", "শিহাব"
+        ];
+
+        // fixed contribution amount
+        const AMOUNT = 400;
+
+        // default status: "No", notes: ""
+        let members = memberNames.map((name, idx) => ({
+            id: idx,
+            name: name,
+            status: 'No',
+            notes: ''
+        }));
+
+        // ---------- globals ----------
+        let isAdmin = false;               // normal by default
+        const ADMIN_PASSWORD = "iftar2025"; // simple password (can be changed)
+
+        // localStorage keys
+        const STORAGE_KEY = 'iftarMembers';
+        const ADMIN_KEY = 'iftarAdminFlag';   // we do NOT store admin persistently for security, only members
+
+        // load from localStorage
+        function loadFromStorage() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length === members.length) {
+                        members = parsed;
+                    }
+                } catch (e) {}
+            }
+        }
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
+        }
+
+        loadFromStorage(); // initial load
+
+        // ---------- dom elements ----------
+        const modal = document.getElementById('welcomeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const adminPassInput = document.getElementById('adminPasswordInput');
+        const submitAdminBtn = document.getElementById('submitAdminBtn');
+        const roleDisplay = document.getElementById('roleDisplay');
+        const adminActionsDiv = document.getElementById('adminActions');
+        const tableBody = document.getElementById('tableBody');
+        const darkToggle = document.getElementById('darkModeToggle');
+        const modeIcon = document.getElementById('modeIcon');
+        const modeText = document.getElementById('modeText');
+        const saveBtn = document.getElementById('saveChangesBtn');
+        const resetBtn = document.getElementById('resetStatusBtn');
+
+        // stat spans
+        const totalMembersSpan = document.getElementById('totalMembers');
+        const totalPaidSpan = document.getElementById('totalPaid');
+        const totalPendingSpan = document.getElementById('totalPending');
+        const totalCollectedSpan = document.getElementById('totalCollected');
+
+        // ---------- helper functions ----------
+        function computeStats() {
+            const paid = members.filter(m => m.status === 'Paid').length;
+            const loading = members.filter(m => m.status === 'Loading').length;
+            const no = members.filter(m => m.status === 'No').length;
+            const collected = members.filter(m => m.status === 'Paid').length * AMOUNT;
+            return { paid, loading, no, collected };
+        }
+
+        function updateStatCards() {
+            const stats = computeStats();
+            totalMembersSpan.innerText = members.length;
+            totalPaidSpan.innerText = stats.paid;
+            totalPendingSpan.innerText = stats.loading + stats.no; // pending = Loading + No
+            totalCollectedSpan.innerText = stats.collected;
+        }
+
+        // render table based on admin mode
+        function renderTable() {
+            let html = '';
+            members.forEach((member, index) => {
+                const serial = index + 1;
+                const statusClass = 
+                    member.status === 'Paid' ? 'status-paid' : 
+                    member.status === 'Loading' ? 'status-loading' : 'status-no';
+
+                // if admin: dropdown + editable notes; else: plain text
+                if (isAdmin) {
+                    html += `<tr>
+                        <td>${serial}</td>
+                        <td>${member.name}</td>
+                        <td>${AMOUNT} BDT</td>
+                        <td>
+                            <select class="status-select" data-id="${member.id}">
+                                <option value="Paid" ${member.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Loading" ${member.status === 'Loading' ? 'selected' : ''}>Loading</option>
+                                <option value="No" ${member.status === 'No' ? 'selected' : ''}>No</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="notes-input" data-id="${member.id}" placeholder="optional note" value="${member.notes || ''}">
+                        </td>
+                    </tr>`;
+                } else {
+                    html += `<tr>
+                        <td>${serial}</td>
+                        <td>${member.name}</td>
+                        <td>${AMOUNT} BDT</td>
+                        <td><span class="status-badge ${statusClass}">${member.status}</span></td>
+                        <td>${member.notes ? member.notes : '—'}</td>
+                    </tr>`;
+                }
+            });
+            tableBody.innerHTML = html;
+            updateStatCards();
+        }
+
+        // update members array from UI (admin only)
+        function syncMembersFromUI() {
+            if (!isAdmin) return;
+            const selects = document.querySelectorAll('.status-select');
+            const notes = document.querySelectorAll('.notes-input');
+            selects.forEach(select => {
+                const id = parseInt(select.dataset.id);
+                const member = members.find(m => m.id === id);
+                if (member) member.status = select.value;
+            });
+            notes.forEach(input => {
+                const id = parseInt(input.dataset.id);
+                const member = members.find(m => m.id === id);
+                if (member) member.notes = input.value;
+            });
+            saveToStorage();
+            renderTable(); // refresh display (ensures stats)
+        }
+
+        // reset all status to "No" and clear notes (admin only)
+        function resetStatus() {
+            if (!isAdmin) return;
+            members = members.map(m => ({ ...m, status: 'No', notes: '' }));
+            saveToStorage();
+            renderTable();
+        }
+
+        // set admin mode
+        function setAdminMode(admin) {
+            isAdmin = admin;
+            if (isAdmin) {
+                roleDisplay.innerHTML = '<i class="fas fa-crown"></i> Admin (full access)';
+                adminActionsDiv.classList.remove('hidden');
+            } else {
+                roleDisplay.innerHTML = '<i class="fas fa-user"></i> Normal user (view only)';
+                adminActionsDiv.classList.add('hidden');
+            }
+            renderTable(); // re-render with appropriate controls
+        }
+
+        // close modal and set role based on admin flag
+        function finalizeModal(admin = false) {
+            setAdminMode(admin);
+            modal.classList.add('hidden');
+        }
+
+        // ---------- event listeners ----------
+        // close modal -> normal user
+        closeModalBtn.addEventListener('click', () => finalizeModal(false));
+
+        // admin submit
+        submitAdminBtn.addEventListener('click', () => {
+            const pwd = adminPassInput.value.trim();
+            if (pwd === ADMIN_PASSWORD) {
+                finalizeModal(true);
+            } else {
+                alert('Incorrect password. You continue as normal user.');
+                finalizeModal(false);
+            }
+        });
+
+        // also if click outside? we treat close as normal, but we have overlay click optional (close if overlay? not to be annoying)
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                // treat as normal user
+                finalizeModal(false);
+            }
+        });
+
+        // dark mode toggle
+        darkToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            modeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+            modeText.innerText = isDark ? 'Dark' : 'Light';
+        });
+
+        // save button: sync from ui
+        saveBtn.addEventListener('click', () => {
+            if (!isAdmin) return;
+            syncMembersFromUI();
+        });
+
+        // reset button
+        resetBtn.addEventListener('click', () => {
+            if (!isAdmin) return;
+            if (confirm('Reset all status to "No" and clear notes?')) {
+                resetStatus();
+            }
+        });
+
+        // initial render (normal user until modal dismissed)
+        // but we show modal, and normal table behind? we want modal on top. we set admin false but modal open.
+        renderTable(); // initially normal (isAdmin = false)
+
+        // If user reloads, they start as normal, modal appears. That's fine.
+
+        // optional: live update if admin changes dropdown but doesn't save? we keep until save.
+        // we can also add auto-save on change? we stick to save button.
+        // but admin can change notes directly, but we want to persist only on save.
+        // however we keep sync on save.
+
+        // also after saving, render again (already inside sync)
+        // also localStorage already on save
+
+        // For admin, when they change dropdown without save, we store temporarily in UI but not in members until save.
+        // We will also add that save reads from UI and writes to members & storage.
+
+        // Ensure that after sync, render updates.
+        // Edge: reset reads from members (already cleared) and saves.
+
+        // also if admin accidentally leaves page, storage is only updated after save or reset. that's fine.
+        // Add small improvement: clicking save saves members to storage.
+
+        // finish: set default total members
+        totalMembersSpan.innerText = members.length;
+        updateStatCards();
+
+        // optional: if user is admin, we want to attach listeners for inputs? But we use sync on save.
+        // all good.
+    })();
+</script>
+</body>
+</html>
