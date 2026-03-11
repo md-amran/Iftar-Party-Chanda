@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts: Inter + Cairo for festive touch -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -328,8 +331,38 @@
             justify-content: center;
         }
 
+        /* loading spinner */
+        .toast-loading, .toast-notification {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: #1f2937;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            box-shadow: 0 10px 25px #00000030;
+            z-index: 200;
+        }
+        .toast-notification {
+            background: #059669;
+        }
         .hidden {
             display: none !important;
+        }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff66;
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0); } 
+            100% { transform: rotate(360deg); } 
         }
 
         /* responsive */
@@ -344,6 +377,15 @@
     </style>
 </head>
 <body>
+
+<!-- Loading & Notification Toasts -->
+<div id="loadingSpinner" class="toast-loading hidden">
+    <span class="spinner"></span> <span>updating...</span>
+</div>
+<div id="notification" class="toast-notification hidden">
+    <i class="fa-regular fa-circle-check"></i>
+    <span id="notificationMessage"></span>
+</div>
 
 <div class="dashboard" id="dashboard">
 
@@ -412,6 +454,21 @@
 
 <script>
     (function() {
+        // ---------- Firebase Configuration ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1D-kdhCI5G35nI1T-umD9hQioUNy2OQE",
+            authDomain: "ifter-chanda.firebaseapp.com",
+            projectId: "ifter-chanda",
+            storageBucket: "ifter-chanda.firebasestorage.app",
+            messagingSenderId: "610812036162",
+            appId: "1:610812036162:web:7b553100d972125d76d9db",
+            measurementId: "G-9XGC4R1TZV"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         // ---------- member list ----------
         const memberNames = [
             "খালিদ বিন শামীম (আদি)", "প্রতীক দাস", "কাজী আরাফাত", "তানভীর আলম", "সাইফুর রহমান",
@@ -420,44 +477,15 @@
             "নিরব", "সাগর", "রাফি", "সামাদ", "শিহাব"
         ];
 
-        // fixed contribution amount
         const AMOUNT = 400;
+        let members = [];
+        let isAdmin = false;
+        const ADMIN_PASSWORD = "Chanda_de";
+        
+        // Track pending changes (for Save button)
+        let pendingUpdates = new Map();
 
-        // default status: "No", notes: ""
-        let members = memberNames.map((name, idx) => ({
-            id: idx,
-            name: name,
-            status: 'No',
-            notes: ''
-        }));
-
-        // ---------- globals ----------
-        let isAdmin = false;               // normal by default
-        const ADMIN_PASSWORD = "iftar2025"; // simple password (can be changed)
-
-        // localStorage keys
-        const STORAGE_KEY = 'iftarMembers';
-        const ADMIN_KEY = 'iftarAdminFlag';   // we do NOT store admin persistently for security, only members
-
-        // load from localStorage
-        function loadFromStorage() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    if (Array.isArray(parsed) && parsed.length === members.length) {
-                        members = parsed;
-                    }
-                } catch (e) {}
-            }
-        }
-        function saveToStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
-        }
-
-        loadFromStorage(); // initial load
-
-        // ---------- dom elements ----------
+        // DOM elements
         const modal = document.getElementById('welcomeModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
         const adminPassInput = document.getElementById('adminPasswordInput');
@@ -470,6 +498,9 @@
         const modeText = document.getElementById('modeText');
         const saveBtn = document.getElementById('saveChangesBtn');
         const resetBtn = document.getElementById('resetStatusBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const notification = document.getElementById('notification');
+        const notifMsg = document.getElementById('notificationMessage');
 
         // stat spans
         const totalMembersSpan = document.getElementById('totalMembers');
@@ -477,12 +508,24 @@
         const totalPendingSpan = document.getElementById('totalPending');
         const totalCollectedSpan = document.getElementById('totalCollected');
 
-        // ---------- helper functions ----------
+        // ---------- Helper Functions ----------
+        function showNotif(msg, isError = false) {
+            notifMsg.innerText = msg;
+            notification.classList.remove('hidden');
+            notification.style.background = isError ? '#b13e3e' : '#059669';
+            setTimeout(() => notification.classList.add('hidden'), 2500);
+        }
+
+        function setLoading(show) {
+            if (show) loadingSpinner.classList.remove('hidden');
+            else loadingSpinner.classList.add('hidden');
+        }
+
         function computeStats() {
             const paid = members.filter(m => m.status === 'Paid').length;
             const loading = members.filter(m => m.status === 'Loading').length;
             const no = members.filter(m => m.status === 'No').length;
-            const collected = members.filter(m => m.status === 'Paid').length * AMOUNT;
+            const collected = paid * AMOUNT;
             return { paid, loading, no, collected };
         }
 
@@ -490,20 +533,55 @@
             const stats = computeStats();
             totalMembersSpan.innerText = members.length;
             totalPaidSpan.innerText = stats.paid;
-            totalPendingSpan.innerText = stats.loading + stats.no; // pending = Loading + No
+            totalPendingSpan.innerText = stats.loading + stats.no;
             totalCollectedSpan.innerText = stats.collected;
         }
 
-        // render table based on admin mode
+        // ---------- Firebase Functions ----------
+        async function initializeFirestore() {
+            const snapshot = await db.collection('members').get();
+            if (snapshot.empty) {
+                const batch = db.batch();
+                memberNames.forEach((name, index) => {
+                    const docRef = db.collection('members').doc(`member_${index + 1}`);
+                    batch.set(docRef, {
+                        name: name,
+                        amount: AMOUNT,
+                        status: 'No',
+                        notes: '',
+                        serial: index + 1
+                    });
+                });
+                await batch.commit();
+                console.log('Initial members added to Firestore');
+            }
+        }
+
+        function listenToFirestore() {
+            db.collection('members').orderBy('serial').onSnapshot((snapshot) => {
+                members = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                pendingUpdates.clear(); // Clear pending when new data arrives
+                renderTable();
+                updateStatCards();
+            });
+        }
+
+        // ---------- Render Table ----------
         function renderTable() {
             let html = '';
-            members.forEach((member, index) => {
-                const serial = index + 1;
-                const statusClass = 
-                    member.status === 'Paid' ? 'status-paid' : 
-                    member.status === 'Loading' ? 'status-loading' : 'status-no';
+            members.forEach((member) => {
+                const serial = member.serial;
+                const pending = pendingUpdates.get(member.id) || {};
+                const currentStatus = pending.status !== undefined ? pending.status : member.status;
+                const currentNotes = pending.notes !== undefined ? pending.notes : (member.notes || '');
 
-                // if admin: dropdown + editable notes; else: plain text
+                const statusClass = 
+                    currentStatus === 'Paid' ? 'status-paid' : 
+                    currentStatus === 'Loading' ? 'status-loading' : 'status-no';
+
                 if (isAdmin) {
                     html += `<tr>
                         <td>${serial}</td>
@@ -511,13 +589,13 @@
                         <td>${AMOUNT} BDT</td>
                         <td>
                             <select class="status-select" data-id="${member.id}">
-                                <option value="Paid" ${member.status === 'Paid' ? 'selected' : ''}>Paid</option>
-                                <option value="Loading" ${member.status === 'Loading' ? 'selected' : ''}>Loading</option>
-                                <option value="No" ${member.status === 'No' ? 'selected' : ''}>No</option>
+                                <option value="Paid" ${currentStatus === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Loading" ${currentStatus === 'Loading' ? 'selected' : ''}>Loading</option>
+                                <option value="No" ${currentStatus === 'No' ? 'selected' : ''}>No</option>
                             </select>
                         </td>
                         <td>
-                            <input type="text" class="notes-input" data-id="${member.id}" placeholder="optional note" value="${member.notes || ''}">
+                            <input type="text" class="notes-input" data-id="${member.id}" placeholder="optional note" value="${currentNotes}">
                         </td>
                     </tr>`;
                 } else {
@@ -525,43 +603,92 @@
                         <td>${serial}</td>
                         <td>${member.name}</td>
                         <td>${AMOUNT} BDT</td>
-                        <td><span class="status-badge ${statusClass}">${member.status}</span></td>
-                        <td>${member.notes ? member.notes : '—'}</td>
+                        <td><span class="status-badge ${statusClass}">${currentStatus}</span></td>
+                        <td>${currentNotes ? currentNotes : '—'}</td>
                     </tr>`;
                 }
             });
             tableBody.innerHTML = html;
-            updateStatCards();
+
+            // Add event listeners for admin inputs
+            if (isAdmin) {
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', (e) => {
+                        const memberId = e.target.dataset.id;
+                        const newStatus = e.target.value;
+                        const currentPending = pendingUpdates.get(memberId) || {};
+                        pendingUpdates.set(memberId, { ...currentPending, status: newStatus });
+                        // Visual feedback
+                        e.target.closest('tr').style.backgroundColor = '#fef9c3';
+                        setTimeout(() => e.target.closest('tr').style.backgroundColor = '', 500);
+                    });
+                });
+
+                document.querySelectorAll('.notes-input').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const memberId = e.target.dataset.id;
+                        const newNotes = e.target.value;
+                        const currentPending = pendingUpdates.get(memberId) || {};
+                        pendingUpdates.set(memberId, { ...currentPending, notes: newNotes });
+                        // Visual feedback
+                        e.target.closest('tr').style.backgroundColor = '#fef9c3';
+                        setTimeout(() => e.target.closest('tr').style.backgroundColor = '', 500);
+                    });
+                });
+            }
         }
 
-        // update members array from UI (admin only)
-        function syncMembersFromUI() {
+        // ---------- Save Changes to Firebase ----------
+        async function saveAllChanges() {
+            if (!isAdmin || pendingUpdates.size === 0) {
+                showNotif('No changes to save');
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const batch = db.batch();
+                for (let [memberId, changes] of pendingUpdates.entries()) {
+                    const docRef = db.collection('members').doc(memberId);
+                    batch.update(docRef, changes);
+                }
+                await batch.commit();
+                pendingUpdates.clear();
+                showNotif('All changes saved successfully');
+            } catch (error) {
+                showNotif('Error saving changes', true);
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // ---------- Reset All Status ----------
+        async function resetAllStatus() {
             if (!isAdmin) return;
-            const selects = document.querySelectorAll('.status-select');
-            const notes = document.querySelectorAll('.notes-input');
-            selects.forEach(select => {
-                const id = parseInt(select.dataset.id);
-                const member = members.find(m => m.id === id);
-                if (member) member.status = select.value;
-            });
-            notes.forEach(input => {
-                const id = parseInt(input.dataset.id);
-                const member = members.find(m => m.id === id);
-                if (member) member.notes = input.value;
-            });
-            saveToStorage();
-            renderTable(); // refresh display (ensures stats)
+            if (!confirm('Reset all status to "No" and clear notes?')) return;
+
+            setLoading(true);
+            try {
+                const batch = db.batch();
+                members.forEach(member => {
+                    batch.update(db.collection('members').doc(member.id), { 
+                        status: 'No', 
+                        notes: '' 
+                    });
+                });
+                await batch.commit();
+                pendingUpdates.clear();
+                showNotif('All status reset');
+            } catch (error) {
+                showNotif('Reset error', true);
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
         }
 
-        // reset all status to "No" and clear notes (admin only)
-        function resetStatus() {
-            if (!isAdmin) return;
-            members = members.map(m => ({ ...m, status: 'No', notes: '' }));
-            saveToStorage();
-            renderTable();
-        }
-
-        // set admin mode
+        // ---------- Set Admin Mode ----------
         function setAdminMode(admin) {
             isAdmin = admin;
             if (isAdmin) {
@@ -571,20 +698,17 @@
                 roleDisplay.innerHTML = '<i class="fas fa-user"></i> Normal user (view only)';
                 adminActionsDiv.classList.add('hidden');
             }
-            renderTable(); // re-render with appropriate controls
+            renderTable();
         }
 
-        // close modal and set role based on admin flag
         function finalizeModal(admin = false) {
             setAdminMode(admin);
             modal.classList.add('hidden');
         }
 
-        // ---------- event listeners ----------
-        // close modal -> normal user
+        // ---------- Event Listeners ----------
         closeModalBtn.addEventListener('click', () => finalizeModal(false));
 
-        // admin submit
         submitAdminBtn.addEventListener('click', () => {
             const pwd = adminPassInput.value.trim();
             if (pwd === ADMIN_PASSWORD) {
@@ -595,15 +719,12 @@
             }
         });
 
-        // also if click outside? we treat close as normal, but we have overlay click optional (close if overlay? not to be annoying)
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
-                // treat as normal user
                 finalizeModal(false);
             }
         });
 
-        // dark mode toggle
         darkToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
@@ -611,49 +732,18 @@
             modeText.innerText = isDark ? 'Dark' : 'Light';
         });
 
-        // save button: sync from ui
-        saveBtn.addEventListener('click', () => {
-            if (!isAdmin) return;
-            syncMembersFromUI();
+        saveBtn.addEventListener('click', saveAllChanges);
+
+        resetBtn.addEventListener('click', resetAllStatus);
+
+        // ---------- Initialize App ----------
+        initializeFirestore().then(() => {
+            listenToFirestore();
         });
 
-        // reset button
-        resetBtn.addEventListener('click', () => {
-            if (!isAdmin) return;
-            if (confirm('Reset all status to "No" and clear notes?')) {
-                resetStatus();
-            }
-        });
-
-        // initial render (normal user until modal dismissed)
-        // but we show modal, and normal table behind? we want modal on top. we set admin false but modal open.
-        renderTable(); // initially normal (isAdmin = false)
-
-        // If user reloads, they start as normal, modal appears. That's fine.
-
-        // optional: live update if admin changes dropdown but doesn't save? we keep until save.
-        // we can also add auto-save on change? we stick to save button.
-        // but admin can change notes directly, but we want to persist only on save.
-        // however we keep sync on save.
-
-        // also after saving, render again (already inside sync)
-        // also localStorage already on save
-
-        // For admin, when they change dropdown without save, we store temporarily in UI but not in members until save.
-        // We will also add that save reads from UI and writes to members & storage.
-
-        // Ensure that after sync, render updates.
-        // Edge: reset reads from members (already cleared) and saves.
-
-        // also if admin accidentally leaves page, storage is only updated after save or reset. that's fine.
-        // Add small improvement: clicking save saves members to storage.
-
-        // finish: set default total members
-        totalMembersSpan.innerText = members.length;
+        // Initial render
+        totalMembersSpan.innerText = memberNames.length;
         updateStatCards();
-
-        // optional: if user is admin, we want to attach listeners for inputs? But we use sync on save.
-        // all good.
     })();
 </script>
 </body>
