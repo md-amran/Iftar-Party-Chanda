@@ -6,413 +6,666 @@
     <title>Iftar Tracker · Ramadan Dashboard</title>
     <!-- Font Awesome 6 (free) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts: Inter + Cairo for festive touch -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Playfair Display + Noto Sans Bengali -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <style>
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
         }
 
-        /* Ramadan inspired palette */
         :root {
-            --bg-light: #f9fafb;
-            --bg-dark: #0f2e1f;
-            --card-white: rgba(255, 255, 255, 0.85);
-            --green-deep: #0b4f2e;
-            --green-gold: #b88b1f;
-            --gold: #d4af37;
-            --gold-light: #f8e3a7;
-            --emerald: #1e7b4b;
-            --shadow: 0 20px 30px -10px rgba(0, 40, 10, 0.2);
-            --text-dark: #1f2937;
-            --text-soft: #374151;
-            --border-light: #e9e9e9;
-            --status-paid: #10b981;
-            --status-loading: #f59e0b;
-            --status-no: #b91c1c;
+            --ink: #12100e;
+            --ink-soft: #3d3530;
+            --ink-muted: #7a6e68;
+            --parchment: #faf6ef;
+            --parchment-deep: #f2ead8;
+            --cream: #fffdf8;
+            --gold: #c9922a;
+            --gold-bright: #e8ab3a;
+            --gold-pale: #f5dfa8;
+            --gold-faint: #fdf3dc;
+            --emerald: #1a5c3a;
+            --emerald-deep: #0f3d26;
+            --emerald-soft: #2d7a52;
+            --emerald-pale: #d4edde;
+            --ruby: #8b1a1a;
+            --ruby-pale: #fce8e8;
+            --amber: #92510c;
+            --amber-pale: #fef3e2;
+            --divider: #e8dece;
+            --shadow-warm: rgba(120, 80, 20, 0.12);
+            --shadow-deep: rgba(12, 10, 8, 0.18);
         }
 
-        /* dark mode class */
         body.dark {
-            --bg-light: #0a1e14;
-            --card-white: rgba(25, 45, 30, 0.9);
-            --text-dark: #f0f3e8;
-            --text-soft: #d1d5c7;
-            --border-light: #2d4a33;
-            --shadow: 0 20px 30px -10px #00000055;
+            --ink: #f0ead8;
+            --ink-soft: #d4c9b8;
+            --ink-muted: #8a7d6e;
+            --parchment: #14110d;
+            --parchment-deep: #1c1710;
+            --cream: #1a160f;
+            --gold: #e8ab3a;
+            --gold-bright: #f5c84a;
+            --gold-pale: #3d2e0f;
+            --gold-faint: #241b08;
+            --emerald: #3aab6e;
+            --emerald-deep: #2d8a56;
+            --emerald-soft: #4fbd82;
+            --emerald-pale: #0d2a1a;
+            --ruby: #e05252;
+            --ruby-pale: #2a0f0f;
+            --amber: #e0a050;
+            --amber-pale: #251808;
+            --divider: #2d2418;
+            --shadow-warm: rgba(0, 0, 0, 0.3);
+            --shadow-deep: rgba(0, 0, 0, 0.5);
         }
 
         body {
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            transition: background 0.3s, color 0.3s;
+            font-family: 'DM Sans', 'Noto Sans Bengali', sans-serif;
+            background-color: var(--parchment);
+            color: var(--ink);
             min-height: 100vh;
-            padding: 1.5rem;
-            backdrop-filter: blur(2px);
+            padding: 2rem 1.5rem 4rem;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            /* Subtle noise texture */
+            background-image: 
+                radial-gradient(ellipse at 20% 0%, rgba(201,146,42,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(26,92,58,0.06) 0%, transparent 60%);
         }
 
-        /* glassmorphism base */
-        .glass-card {
-            background: var(--card-white);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 215, 0, 0.15);
-            border-radius: 32px;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s;
-        }
-        .glass-card:hover {
-            box-shadow: 0 25px 40px -12px #1e4b2e;
-        }
-
+        /* ─── Layout ─── */
         .dashboard {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* header */
+        /* ─── Header ─── */
         .header-section {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.8rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--divider);
+            position: relative;
         }
+
+        /* Decorative top line */
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: -2rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--emerald), var(--gold), transparent);
+            opacity: 0.6;
+        }
+
         .title h1 {
-            font-size: 2.2rem;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.6rem;
             font-weight: 700;
-            background: linear-gradient(145deg, #0b4f2e, #b88b1f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--ink);
             letter-spacing: -0.5px;
+            line-height: 1.1;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
         }
-        .title p {
-            font-size: 1rem;
+
+        .title h1 .moon-icon {
             color: var(--gold);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .title p i {
-            color: var(--green-gold);
+            font-size: 2rem;
         }
 
+        .title-sub {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--ink-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-sub::before {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        /* Dark mode toggle */
         .mode-badge {
-            background: var(--green-deep);
-            color: white;
-            padding: 0.6rem 1.5rem;
-            border-radius: 60px;
-            font-weight: 600;
-            box-shadow: 0 10px 15px -8px #0b4f2e;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            padding: 0.55rem 1.2rem;
+            border-radius: 6px;
+            border: 1px solid var(--divider);
+            background: var(--cream);
+            color: var(--ink-soft);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
             cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #f3d371;
-        }
-        .mode-badge i {
-            font-size: 1.3rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 4px var(--shadow-warm);
         }
 
-        /* stat cards */
+        .mode-badge:hover,
+        .mode-badge:active {
+            border-color: var(--gold);
+            color: var(--gold);
+            box-shadow: 0 2px 10px var(--shadow-warm);
+        }
+
+        /* Mobile tap highlight fix */
+        .mode-badge {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .mode-badge i {
+            font-size: 0.9rem;
+        }
+
+        /* ─── Stat Cards ─── */
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
+            gap: 1rem;
             margin-bottom: 2.5rem;
         }
+
         .stat-item {
-            padding: 1.5rem 1rem;
-            border-radius: 32px;
-            text-align: center;
-            background: var(--card-white);
-            backdrop-filter: blur(4px);
-            border: 1px solid var(--gold-light);
-            transition: all 0.3s;
-        }
-        .stat-item i {
-            font-size: 2rem;
-            color: var(--gold);
-            margin-bottom: 0.5rem;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-soft);
-        }
-        .stat-number {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--green-deep);
-        }
-        body.dark .stat-number {
-            color: var(--gold-light);
+            background: var(--cream);
+            border: 1px solid var(--divider);
+            border-radius: 4px;
+            padding: 1.5rem 1.2rem;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
         }
 
-        /* admin bar */
+        .stat-item:hover {
+            box-shadow: 0 8px 24px var(--shadow-warm);
+            transform: translateY(-2px);
+        }
+
+        /* Accent left bar */
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .stat-item:nth-child(1)::before { background: var(--emerald); }
+        .stat-item:nth-child(2)::before { background: var(--gold); }
+        .stat-item:nth-child(3)::before { background: var(--amber); }
+        .stat-item:nth-child(4)::before { background: var(--ruby); }
+
+        .stat-item i {
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+            display: block;
+            color: var(--ink-muted);
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--ink-muted);
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        /* ─── Admin Bar ─── */
         .admin-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 1rem 0 1.8rem 0;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
-            gap: 15px;
-        }
-        .role-tag {
-            background: var(--green-deep);
-            border-radius: 60px;
-            padding: 0.5rem 1.5rem;
-            color: white;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--gold);
-        }
-        .admin-actions {
-            display: flex;
             gap: 12px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 0.7rem 1.5rem;
-            border-radius: 40px;
-            border: none;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: white;
-            color: var(--green-deep);
-            box-shadow: 0 8px 18px -8px #aaaaaa;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid var(--gold-light);
-        }
-        .btn-gold {
-            background: var(--gold);
-            color: #0a2e1a;
-            border: 1px solid #f5d773;
-        }
-        .btn-outline {
-            background: transparent;
-            backdrop-filter: blur(4px);
-            border: 1.5px solid var(--green-deep);
-            color: var(--green-deep);
-        }
-        body.dark .btn-outline {
-            color: var(--gold-light);
-            border-color: var(--gold);
-        }
-        .btn:hover {
-            transform: translateY(-4px);
         }
 
-        /* table container */
-        .table-wrapper {
-            border-radius: 32px;
-            overflow-x: auto;
-            padding: 0.5rem;
-            background: var(--card-white);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--gold-light);
-            box-shadow: var(--shadow);
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.45rem 1rem;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            background: var(--emerald-pale);
+            color: var(--emerald);
+            border: 1px solid rgba(26,92,58,0.2);
         }
+
+        .role-tag.super {
+            background: #ede8f8;
+            color: #5b3fb5;
+            border-color: rgba(91,63,181,0.2);
+        }
+
+        body.dark .role-tag { background: var(--emerald-pale); }
+        body.dark .role-tag.super { background: #1e1830; color: #a48fe0; border-color: rgba(164,143,224,0.2); }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.6rem 1.3rem;
+            border-radius: 4px;
+            border: 1px solid var(--divider);
+            background: var(--cream);
+            color: var(--ink-soft);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px var(--shadow-warm);
+        }
+
+        .btn:hover {
+            box-shadow: 0 4px 14px var(--shadow-warm);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #fff;
+            border-color: var(--gold);
+            font-weight: 600;
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-bright);
+            border-color: var(--gold-bright);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--emerald);
+            color: var(--emerald);
+        }
+
+        .btn-outline:hover {
+            background: var(--emerald-pale);
+        }
+
+        body.dark .btn {
+            background: var(--parchment-deep);
+            border-color: var(--divider);
+            color: var(--ink-soft);
+        }
+
+        /* ─── Table ─── */
+        .table-wrapper {
+            background: var(--cream);
+            border: 1px solid var(--divider);
+            border-radius: 4px;
+            overflow-x: auto;
+            box-shadow: 0 2px 20px var(--shadow-warm);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 750px;
-            font-size: 0.95rem;
+            min-width: 680px;
         }
-        th {
-            text-align: left;
-            padding: 1.2rem 0.8rem 0.8rem 0.8rem;
-            color: var(--green-deep);
-            font-weight: 600;
+
+        thead {
+            background: var(--parchment-deep);
             border-bottom: 2px solid var(--gold);
         }
-        td {
-            padding: 1rem 0.8rem;
-            border-bottom: 1px solid var(--border-light);
-        }
-        tr:last-child td {
-            border-bottom: 0;
-        }
 
-        .status-badge {
-            padding: 0.3rem 1rem;
-            border-radius: 40px;
+        th {
+            text-align: left;
+            padding: 1rem 1.2rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            font-size: 0.85rem;
-            display: inline-block;
-            text-align: center;
-            min-width: 80px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--ink-muted);
         }
-        .status-paid { background: #d1fae5; color: #065f46; }
-        .status-loading { background: #fed7aa; color: #92400e; }
-        .status-no { background: #fee2e2; color: #b91c1c; }
 
+        td {
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px solid var(--divider);
+            font-size: 0.92rem;
+            color: var(--ink-soft);
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tbody tr {
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--gold-faint);
+        }
+
+        /* Serial number styling */
+        td:first-child {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.85rem;
+            color: var(--ink-muted);
+            font-weight: 400;
+        }
+
+        /* Name column */
+        td:nth-child(2) {
+            font-weight: 500;
+            color: var(--ink);
+            font-family: 'Noto Sans Bengali', 'DM Sans', sans-serif;
+        }
+
+        /* Amount column */
+        td:nth-child(3) {
+            font-family: 'DM Sans', monospace;
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+        }
+
+        /* ─── Status Badges ─── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0.3rem 0.8rem;
+            border-radius: 3px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+
+        .status-paid {
+            background: var(--emerald-pale);
+            color: var(--emerald);
+            border: 1px solid rgba(26,92,58,0.15);
+        }
+
+        .status-paid::before { background: var(--emerald); }
+
+        .status-loading {
+            background: var(--amber-pale);
+            color: var(--amber);
+            border: 1px solid rgba(146,81,12,0.15);
+        }
+
+        .status-loading::before { background: var(--amber); }
+
+        .status-no {
+            background: var(--ruby-pale);
+            color: var(--ruby);
+            border: 1px solid rgba(139,26,26,0.15);
+        }
+
+        .status-no::before { background: var(--ruby); }
+
+        /* ─── Form Controls in Admin Mode ─── */
         select, input[type="text"] {
-            padding: 0.5rem 0.8rem;
-            border-radius: 30px;
-            border: 1px solid var(--gold);
-            background: white;
+            padding: 0.45rem 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--divider);
+            background: var(--parchment);
+            color: var(--ink);
+            font-family: 'DM Sans', 'Noto Sans Bengali', sans-serif;
+            font-size: 0.85rem;
             font-weight: 500;
             width: 100%;
-            max-width: 140px;
+            max-width: 130px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
         }
-        .notes-input {
-            max-width: 160px;
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a6e68'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 28px;
         }
 
-        /* modal overlay */
-        /* modal overlay - পারফেক্ট সেন্টার ফর অল ডিভাইসেস */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    margin: 0;
-    padding: 0;
-}
+        select:focus, input[type="text"]:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
+        }
 
-.modal-content {
-    background: var(--card-white);
-    backdrop-filter: blur(20px);
-    border-radius: 48px;
-    padding: 2.5rem 2rem;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 40px 60px -20px #1e3b2a;
-    border: 1px solid var(--gold);
-    text-align: center;
-    position: relative;
-    margin: 0 auto;
-}
+        .notes-input { max-width: 160px; }
 
-.modal-content h2 {
-    color: var(--green-deep);
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
+        body.dark select, body.dark input[type="text"] {
+            background: var(--parchment-deep);
+            border-color: var(--divider);
+            color: var(--ink);
+        }
 
-.modal-content p {
-    margin-bottom: 2rem;
-    color: var(--text-soft);
-}
-
-.modal-input {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 60px;
-    border: 2px solid var(--gold-light);
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
-}
-
-.modal-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: none;
-    border: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: var(--green-deep);
-    line-height: 1;
-    padding: 5px;
-    z-index: 1001;
-}
-
-.modal-footer {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-}
-
-/* ছোট স্ক্রিনের জন্য (মোবাইল) */
-@media (max-width: 480px) {
-    .modal-content {
-        width: 85%;
-        padding: 2rem 1.5rem;
-    }
-    
-    .modal-close {
-        top: 10px;
-        right: 15px;
-        font-size: 1.6rem;
-    }
-}
-
-/* খুব ছোট স্ক্রিনের জন্য */
-@media (max-width: 350px) {
-    .modal-content {
-        width: 90%;
-        padding: 1.8rem 1rem;
-    }
-}
-
-        /* loading spinner */
-        .toast-loading, .toast-notification {
+        /* ─── Modal ─── */
+        .modal-overlay {
             position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            background: #1f2937;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 60px;
+            inset: 0;
+            background: rgba(12, 10, 8, 0.55);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
-            gap: 0.7rem;
-            box-shadow: 0 10px 25px #00000030;
-            z-index: 200;
-        }
-        .toast-notification {
-            background: #059669;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ffffff66;
-            border-top: 3px solid white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0); } 
-            100% { transform: rotate(360deg); } 
+            justify-content: center;
+            z-index: 1000;
         }
 
-        /* responsive */
-        @media (max-width: 800px) {
-            .stat-grid { grid-template-columns: 1fr 1fr; }
-            .admin-bar { flex-direction: column; align-items: start; }
+        .modal-content {
+            background: var(--cream);
+            color: var(--ink);
+            border-radius: 6px;
+            padding: 3rem 2.5rem 2.5rem;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 40px 80px -20px var(--shadow-deep);
+            border-top: 4px solid var(--gold);
+            position: relative;
+            text-align: center;
+            animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        @media (max-width: 500px) {
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(24px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-content .modal-icon {
+            font-size: 2.4rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 0.4rem;
+        }
+
+        .modal-content p {
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.85rem 1.2rem;
+            border: 1px solid var(--divider);
+            border-radius: 4px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            color: var(--ink);
+            background: var(--parchment);
+            margin-bottom: 1.5rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--ink-muted);
+            line-height: 1;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover { color: var(--ink); }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-hint {
+            display: block;
+            margin-top: 1.2rem;
+            font-size: 0.78rem;
+            color: var(--ink-muted);
+        }
+
+        /* ─── Toasts ─── */
+        .toast-loading, .toast-notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.75rem 1.4rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px var(--shadow-deep);
+            z-index: 200;
+            animation: toastIn 0.25s ease;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .toast-loading {
+            background: var(--ink);
+            color: var(--parchment);
+        }
+
+        .toast-notification {
+            background: var(--emerald);
+            color: white;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none !important; }
+
+        /* ─── Scrollbar ─── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-pale); border-radius: 20px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 860px) {
+            .stat-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 1.5rem 1rem 3rem; }
+            .title h1 { font-size: 1.9rem; }
+            .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+            .admin-bar { flex-direction: column; align-items: flex-start; }
+            .modal-content { padding: 2.5rem 1.5rem 2rem; }
+        }
+
+        @media (max-width: 380px) {
             .stat-grid { grid-template-columns: 1fr; }
-            .title h1 { font-size: 1.8rem; }
+            .title h1 { font-size: 1.6rem; }
         }
     </style>
 </head>
@@ -433,22 +686,22 @@
     <div class="modal-overlay" id="welcomeModal">
         <div class="modal-content">
             <button class="modal-close" id="closeModalBtn">&times;</button>
-            <i class="fas fa-star-and-crescent" style="font-size: 3rem; color: var(--gold);"></i>
+            <div class="modal-icon"><i class="fas fa-star-and-crescent"></i></div>
             <h2>🌙 أهلًا</h2>
             <p>Welcome to the Iftar Party চান্দা Website</p>
-            <input type="password" class="modal-input" id="adminPasswordInput" placeholder="Admin password" value="">
+            <input type="password" class="modal-input" id="adminPasswordInput" placeholder="Enter password" value="">
             <div class="modal-footer">
-                <button class="btn btn-gold" id="submitAdminBtn"><i class="fas fa-key"></i> Enter as admin</button>
+                <button class="btn btn-gold" id="submitAdminBtn"><i class="fas fa-key"></i> Login as Admin / Super</button>
             </div>
-            <small style="display: block; margin-top: 15px; color: var(--text-soft)">(click X to continue as normal user)</small>
+            <small class="modal-hint">(click × to continue as normal user)</small>
         </div>
     </div>
 
     <!-- header -->
     <div class="header-section">
         <div class="title">
-            <h1><i class="fas fa-moon" style="color: var(--gold);"></i> Iftar Party চান্দা List</h1>
-            <p><i class="fas fa-lantern"></i> Ramadan Iftar Gathering · 400 BDT each</p>
+            <h1><i class="fas fa-moon moon-icon"></i> Iftar Party চান্দা List</h1>
+            <p class="title-sub">Ramadan Iftar Gathering · 400 BDT each</p>
         </div>
         <div class="mode-badge" id="darkModeToggle">
             <i class="fas fa-sun" id="modeIcon"></i>
@@ -469,7 +722,7 @@
         <div class="role-tag" id="roleDisplay"><i class="fas fa-user"></i> Normal user (view only)</div>
         <div class="admin-actions" id="adminActions">
             <button class="btn btn-gold" id="saveChangesBtn"><i class="fas fa-save"></i> Save changes</button>
-            <button class="btn btn-outline" id="resetStatusBtn"><i class="fas fa-undo-alt"></i> Reset status</button>
+            <button class="btn btn-outline" id="resetStatusBtn"><i class="fas fa-undo-alt"></i> Reset all status</button>
         </div>
     </div>
 
@@ -519,8 +772,11 @@
 
         const AMOUNT = 400;
         let members = [];
-        let isAdmin = false;
-        const ADMIN_PASSWORD = "Chanda_de";
+        let adminLevel = null; // 'super', 'normal', or null
+        
+        // পাসওয়ার্ড ডিফাইন
+        const ADMIN_PASSWORD = "Chanda_de";        // সাধারণ এডমিন
+        const SUPER_ADMIN_PASSWORD = "Chanda_dela"; // সুপার এডমিন
         
         // Track pending changes (for Save button)
         let pendingUpdates = new Map();
@@ -622,7 +878,8 @@
                     currentStatus === 'Paid' ? 'status-paid' : 
                     currentStatus === 'Loading' ? 'status-loading' : 'status-no';
 
-                if (isAdmin) {
+                // এডমিন লেভেল চেক (সুপার এডমিন বা সাধারণ এডমিন)
+                if (adminLevel === 'super' || adminLevel === 'normal') {
                     html += `<tr>
                         <td>${serial}</td>
                         <td>${member.name}</td>
@@ -651,7 +908,7 @@
             tableBody.innerHTML = html;
 
             // Add event listeners for admin inputs
-            if (isAdmin) {
+            if (adminLevel === 'super' || adminLevel === 'normal') {
                 document.querySelectorAll('.status-select').forEach(select => {
                     select.addEventListener('change', (e) => {
                         const memberId = e.target.dataset.id;
@@ -680,7 +937,7 @@
 
         // ---------- Save Changes to Firebase ----------
         async function saveAllChanges() {
-            if (!isAdmin || pendingUpdates.size === 0) {
+            if (!adminLevel || pendingUpdates.size === 0) {
                 showNotif('No changes to save');
                 return;
             }
@@ -705,8 +962,13 @@
 
         // ---------- Reset All Status ----------
         async function resetAllStatus() {
-            if (!isAdmin) return;
-            if (!confirm('Reset all status to "No" and clear notes?')) return;
+            // শুধু সুপার এডমিন এই কাজ করতে পারবে
+            if (adminLevel !== 'super') {
+                showNotif('Only Super Admin can reset all status!', true);
+                return;
+            }
+            
+            if (!confirm('Reset all status to "No" and clear notes? (Super Admin only)')) return;
 
             setLoading(true);
             try {
@@ -719,7 +981,7 @@
                 });
                 await batch.commit();
                 pendingUpdates.clear();
-                showNotif('All status reset');
+                showNotif('All status reset by Super Admin');
             } catch (error) {
                 showNotif('Reset error', true);
                 console.error(error);
@@ -729,39 +991,58 @@
         }
 
         // ---------- Set Admin Mode ----------
-        function setAdminMode(admin) {
-            isAdmin = admin;
-            if (isAdmin) {
-                roleDisplay.innerHTML = '<i class="fas fa-crown"></i> Admin (full access)';
+        function setAdminMode(level) {
+            adminLevel = level;
+            
+            if (adminLevel === 'super') {
+                roleDisplay.innerHTML = '<i class="fas fa-crown"></i> Super Admin (full access)';
+                roleDisplay.classList.add('super');
                 adminActionsDiv.classList.remove('hidden');
+                resetBtn.disabled = false;
+                resetBtn.title = "Super Admin only - Reset all status";
+            } else if (adminLevel === 'normal') {
+                roleDisplay.innerHTML = '<i class="fas fa-user-shield"></i> Admin (edit only)';
+                roleDisplay.classList.remove('super');
+                adminActionsDiv.classList.remove('hidden');
+                resetBtn.disabled = true;
+                resetBtn.title = "Only Super Admin can reset all status";
             } else {
                 roleDisplay.innerHTML = '<i class="fas fa-user"></i> Normal user (view only)';
+                roleDisplay.classList.remove('super');
                 adminActionsDiv.classList.add('hidden');
             }
+            
             renderTable();
         }
 
-        function finalizeModal(admin = false) {
-            setAdminMode(admin);
+        function finalizeModal(level = null) {
+            setAdminMode(level);
             modal.classList.add('hidden');
         }
 
         // ---------- Event Listeners ----------
-        closeModalBtn.addEventListener('click', () => finalizeModal(false));
+        closeModalBtn.addEventListener('click', () => finalizeModal(null));
 
         submitAdminBtn.addEventListener('click', () => {
             const pwd = adminPassInput.value.trim();
-            if (pwd === ADMIN_PASSWORD) {
-                finalizeModal(true);
+            
+            if (pwd === SUPER_ADMIN_PASSWORD) {
+                finalizeModal('super');
+                showNotif('Welcome Super Admin!');
+            } else if (pwd === ADMIN_PASSWORD) {
+                finalizeModal('normal');
+                showNotif('Welcome Admin!');
+            } else if (pwd === '') {
+                finalizeModal(null);
             } else {
                 alert('Incorrect password. You continue as normal user.');
-                finalizeModal(false);
+                finalizeModal(null);
             }
         });
 
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
-                finalizeModal(false);
+                finalizeModal(null);
             }
         });
 
@@ -770,6 +1051,7 @@
             const isDark = document.body.classList.contains('dark');
             modeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
             modeText.innerText = isDark ? 'Dark' : 'Light';
+            darkToggle.blur(); // remove focus/hover stuck state on mobile
         });
 
         saveBtn.addEventListener('click', saveAllChanges);
@@ -788,4 +1070,3 @@
 </script>
 </body>
 </html>
-
