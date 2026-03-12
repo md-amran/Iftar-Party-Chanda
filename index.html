@@ -4,19 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Iftar Tracker · Ramadan Dashboard</title>
-    <!-- Font Awesome 6 (free) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts: Playfair Display + Noto Sans Bengali -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <style>
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --ink: #12100e;
@@ -37,9 +30,11 @@
             --ruby-pale: #fce8e8;
             --amber: #92510c;
             --amber-pale: #fef3e2;
+            --purple: #5b3fb5;
+            --purple-pale: #ede8f8;
             --divider: #e8dece;
-            --shadow-warm: rgba(120, 80, 20, 0.12);
-            --shadow-deep: rgba(12, 10, 8, 0.18);
+            --shadow-warm: rgba(120,80,20,0.12);
+            --shadow-deep: rgba(12,10,8,0.18);
         }
 
         body.dark {
@@ -61,9 +56,11 @@
             --ruby-pale: #2a0f0f;
             --amber: #e0a050;
             --amber-pale: #251808;
+            --purple: #a48fe0;
+            --purple-pale: #1e1830;
             --divider: #2d2418;
-            --shadow-warm: rgba(0, 0, 0, 0.3);
-            --shadow-deep: rgba(0, 0, 0, 0.5);
+            --shadow-warm: rgba(0,0,0,0.3);
+            --shadow-deep: rgba(0,0,0,0.5);
         }
 
         body {
@@ -73,21 +70,14 @@
             min-height: 100vh;
             padding: 2rem 1.5rem 4rem;
             transition: background-color 0.4s ease, color 0.4s ease;
-            background-image: 
+            background-image:
                 radial-gradient(ellipse at 20% 0%, rgba(201,146,42,0.06) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 100%, rgba(26,92,58,0.06) 0%, transparent 60%);
-            position: relative;
         }
 
-        /* ─── Layout ─── */
-        .dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
+        .dashboard { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
 
-        /* ─── Header ─── */
+        /* ── Header ── */
         .header-section {
             display: flex;
             justify-content: space-between;
@@ -103,9 +93,7 @@
         .header-section::before {
             content: '';
             position: absolute;
-            top: -2rem;
-            left: 0;
-            right: 0;
+            top: -2rem; left: 0; right: 0;
             height: 3px;
             background: linear-gradient(90deg, transparent, var(--gold), var(--emerald), var(--gold), transparent);
             opacity: 0.6;
@@ -123,10 +111,7 @@
             gap: 0.6rem;
         }
 
-        .title h1 .moon-icon {
-            color: var(--gold);
-            font-size: 2rem;
-        }
+        .title h1 .moon-icon { color: var(--gold); font-size: 2rem; }
 
         .title-sub {
             margin-top: 0.5rem;
@@ -143,45 +128,27 @@
         .title-sub::before {
             content: '';
             display: inline-block;
-            width: 24px;
-            height: 1px;
+            width: 24px; height: 1px;
             background: var(--gold);
         }
 
-        /* Dark mode toggle */
         .mode-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            display: flex; align-items: center; gap: 8px;
             padding: 0.55rem 1.2rem;
             border-radius: 6px;
             border: 1px solid var(--divider);
             background: var(--cream);
             color: var(--ink-soft);
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.85rem; font-weight: 500;
             letter-spacing: 0.04em;
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 1px 4px var(--shadow-warm);
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
+            user-select: none; -webkit-user-select: none;
         }
+        .mode-badge:hover { border-color: var(--gold); color: var(--gold); box-shadow: 0 2px 10px var(--shadow-warm); }
 
-        .mode-badge:hover,
-        .mode-badge:active {
-            border-color: var(--gold);
-            color: var(--gold);
-            box-shadow: 0 2px 10px var(--shadow-warm);
-        }
-
-        .mode-badge i {
-            font-size: 0.9rem;
-        }
-
-        /* ─── Stat Cards ─── */
+        /* ── Stats ── */
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -198,148 +165,70 @@
             overflow: hidden;
             transition: box-shadow 0.2s ease, transform 0.2s ease;
         }
-
-        .stat-item:hover {
-            box-shadow: 0 8px 24px var(--shadow-warm);
-            transform: translateY(-2px);
-        }
-
+        .stat-item:hover { box-shadow: 0 8px 24px var(--shadow-warm); transform: translateY(-2px); }
         .stat-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0; width: 3px;
         }
-
         .stat-item:nth-child(1)::before { background: var(--emerald); }
         .stat-item:nth-child(2)::before { background: var(--gold); }
         .stat-item:nth-child(3)::before { background: var(--amber); }
         .stat-item:nth-child(4)::before { background: var(--ruby); }
+        .stat-item i { font-size: 1rem; margin-bottom: 0.8rem; display: block; color: var(--ink-muted); }
+        .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); font-weight: 500; margin-bottom: 0.3rem; }
+        .stat-number { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 600; color: var(--ink); line-height: 1; }
 
-        .stat-item i {
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
-            display: block;
-            color: var(--ink-muted);
-        }
-
-        .stat-label {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--ink-muted);
-            font-weight: 500;
-            margin-bottom: 0.3rem;
-        }
-
-        .stat-number {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.4rem;
-            font-weight: 600;
-            color: var(--ink);
-            line-height: 1;
-        }
-
-        /* ─── Admin Bar ─── */
+        /* ── Admin Bar ── */
         .admin-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px;
         }
 
         .role-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0.45rem 1rem;
-            border-radius: 4px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            background: var(--emerald-pale);
-            color: var(--emerald);
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0.45rem 1rem; border-radius: 4px;
+            font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em;
+            background: var(--emerald-pale); color: var(--emerald);
             border: 1px solid rgba(26,92,58,0.2);
+            transition: all 0.3s;
         }
+        .role-tag.super { background: var(--purple-pale); color: var(--purple); border-color: rgba(91,63,181,0.2); }
+        .role-tag.user-role { background: var(--parchment-deep); color: var(--ink-muted); border-color: var(--divider); }
 
-        .role-tag.super {
-            background: #ede8f8;
-            color: #5b3fb5;
-            border-color: rgba(91,63,181,0.2);
-        }
+        .admin-actions-wrap { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-        body.dark .role-tag { background: var(--emerald-pale); }
-        body.dark .role-tag.super { background: #1e1830; color: #a48fe0; border-color: rgba(164,143,224,0.2); }
-
-        .admin-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        /* ─── Buttons ─── */
+        /* ── Buttons ── */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            display: inline-flex; align-items: center; gap: 8px;
             padding: 0.6rem 1.3rem;
             border-radius: 4px;
             border: 1px solid var(--divider);
             background: var(--cream);
             color: var(--ink-soft);
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.85rem; font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px var(--shadow-warm);
         }
+        .btn:hover { box-shadow: 0 4px 14px var(--shadow-warm); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        .btn:hover {
-            box-shadow: 0 4px 14px var(--shadow-warm);
-            transform: translateY(-1px);
-        }
+        .btn-gold { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; }
+        .btn-gold:hover { background: var(--gold-bright); border-color: var(--gold-bright); }
 
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+        .btn-outline { background: transparent; border: 1px solid var(--emerald); color: var(--emerald); }
+        .btn-outline:hover { background: var(--emerald-pale); }
 
-        .btn-gold {
-            background: var(--gold);
-            color: #fff;
-            border-color: var(--gold);
-            font-weight: 600;
-        }
+        .btn-danger { background: var(--ruby); color: #fff; border-color: var(--ruby); font-weight: 600; }
+        .btn-danger:hover { filter: brightness(1.1); }
 
-        .btn-gold:hover {
-            background: var(--gold-bright);
-            border-color: var(--gold-bright);
-        }
+        body.dark .btn { background: var(--parchment-deep); border-color: var(--divider); color: var(--ink-soft); }
+        body.dark .btn-gold { background: var(--gold); color: #1a160f; border-color: var(--gold); }
+        body.dark .btn-danger { background: var(--ruby); color: #fff; border-color: var(--ruby); }
 
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--emerald);
-            color: var(--emerald);
-        }
-
-        .btn-outline:hover {
-            background: var(--emerald-pale);
-        }
-
-        body.dark .btn {
-            background: var(--parchment-deep);
-            border-color: var(--divider);
-            color: var(--ink-soft);
-        }
-
-        /* ─── Table ─── */
+        /* ── Table ── */
         .table-wrapper {
             background: var(--cream);
             border: 1px solid var(--divider);
@@ -348,24 +237,14 @@
             box-shadow: 0 2px 20px var(--shadow-warm);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 680px;
-        }
-
-        thead {
-            background: var(--parchment-deep);
-            border-bottom: 2px solid var(--gold);
-        }
+        table { width: 100%; border-collapse: collapse; min-width: 680px; }
+        thead { background: var(--parchment-deep); border-bottom: 2px solid var(--gold); }
 
         th {
             text-align: left;
             padding: 1rem 1.2rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
+            font-size: 0.7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em;
             color: var(--ink-muted);
         }
 
@@ -378,79 +257,33 @@
         }
 
         tr:last-child td { border-bottom: none; }
+        tbody tr { transition: background 0.15s ease; }
+        tbody tr:hover { background: var(--gold-faint); }
+        td:first-child { font-family: 'Playfair Display', serif; font-size: 0.85rem; color: var(--ink-muted); font-weight: 400; }
+        td:nth-child(2) { font-weight: 500; color: var(--ink); font-family: 'Noto Sans Bengali', 'DM Sans', sans-serif; }
+        td:nth-child(3) { font-family: 'DM Sans', monospace; font-size: 0.88rem; color: var(--ink-muted); }
 
-        tbody tr {
-            transition: background 0.15s ease;
-        }
-
-        tbody tr:hover {
-            background: var(--gold-faint);
-        }
-
-        td:first-child {
-            font-family: 'Playfair Display', serif;
-            font-size: 0.85rem;
-            color: var(--ink-muted);
-            font-weight: 400;
-        }
-
-        td:nth-child(2) {
-            font-weight: 500;
-            color: var(--ink);
-            font-family: 'Noto Sans Bengali', 'DM Sans', sans-serif;
-        }
-
-        td:nth-child(3) {
-            font-family: 'DM Sans', monospace;
-            font-size: 0.88rem;
-            color: var(--ink-muted);
-        }
-
-        /* ─── Status Badges ─── */
+        /* ── Status Badges ── */
         .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 0.3rem 0.8rem;
-            border-radius: 3px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 0.3rem 0.8rem; border-radius: 3px;
+            font-size: 0.78rem; font-weight: 600;
+            letter-spacing: 0.06em; text-transform: uppercase;
         }
-
-        .status-badge::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-        }
-
-        .status-paid {
-            background: var(--emerald-pale);
-            color: var(--emerald);
-            border: 1px solid rgba(26,92,58,0.15);
-        }
-
-        .status-paid::before { background: var(--emerald); }
-
-        .status-loading {
-            background: var(--amber-pale);
-            color: var(--amber);
-            border: 1px solid rgba(146,81,12,0.15);
-        }
-
-        .status-loading::before { background: var(--amber); }
-
-        .status-no {
-            background: var(--ruby-pale);
-            color: var(--ruby);
-            border: 1px solid rgba(139,26,26,0.15);
-        }
-
+        .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+        .status-paid { background: var(--emerald-pale); color: var(--emerald); border: 1px solid rgba(26,92,58,0.15); }
+        .status-paid::before { background: var(--emerald); animation: pulseDot 2s infinite; }
+        .status-loading { background: var(--amber-pale); color: var(--amber); border: 1px solid rgba(146,81,12,0.15); }
+        .status-loading::before { background: var(--amber); animation: pulseDot 1.5s infinite; }
+        .status-no { background: var(--ruby-pale); color: var(--ruby); border: 1px solid rgba(139,26,26,0.15); }
         .status-no::before { background: var(--ruby); }
 
-        /* ─── Form Controls in Admin Mode ─── */
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+
+        /* ── Form Controls ── */
         select, input[type="text"] {
             padding: 0.45rem 0.8rem;
             border-radius: 4px;
@@ -458,231 +291,209 @@
             background: var(--parchment);
             color: var(--ink);
             font-family: 'DM Sans', 'Noto Sans Bengali', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 500;
-            width: 100%;
-            max-width: 130px;
+            font-size: 0.85rem; font-weight: 500;
+            width: 100%; max-width: 130px;
             transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
-            appearance: none;
-            -webkit-appearance: none;
+            appearance: none; -webkit-appearance: none;
         }
-
         select {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a6e68'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 10px center;
             padding-right: 28px;
         }
-
         select:focus, input[type="text"]:focus {
             border-color: var(--gold);
             box-shadow: 0 0 0 3px rgba(201,146,42,0.12);
         }
+        .notes-input { max-width: 170px; }
+        body.dark select, body.dark input[type="text"] { background: var(--parchment-deep); border-color: var(--divider); color: var(--ink); }
 
-        .notes-input { max-width: 160px; }
-
-        body.dark select, body.dark input[type="text"] {
-            background: var(--parchment-deep);
-            border-color: var(--divider);
-            color: var(--ink);
-        }
-
-        /* ===== FIXED MODAL STYLES ===== */
+        /* ── Modal ── */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(12, 10, 8, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            padding: 1rem;
-            opacity: 1;
-            visibility: visible;
+            position: fixed; inset: 0;
+            background: rgba(12,10,8,0.75);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; padding: 1rem;
             transition: opacity 0.3s ease;
         }
 
         .modal-content {
-            background: var(--cream);
-            color: var(--ink);
+            background: var(--cream); color: var(--ink);
             border-radius: 12px;
             padding: 2.5rem 2rem 2rem;
-            width: 100%;
-            max-width: 400px;
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 100%; max-width: 420px;
+            max-height: 90vh; overflow-y: auto;
             box-shadow: 0 25px 50px -12px var(--shadow-deep);
             border-top: 4px solid var(--gold);
-            position: relative;
-            text-align: center;
-            animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            margin: auto;
+            position: relative; text-align: center;
+            animation: modalIn 0.4s cubic-bezier(0.16,1,0.3,1);
         }
 
         @keyframes modalIn {
-            from { 
-                opacity: 0; 
-                transform: scale(0.95) translateY(10px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: scale(1) translateY(0); 
-            }
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .modal-content .modal-icon {
-            font-size: 2.8rem;
-            color: var(--gold);
-            margin-bottom: 1rem;
-        }
+        .modal-icon { font-size: 2.8rem; color: var(--gold); margin-bottom: 1rem; }
 
         .modal-content h2 {
             font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 0.5rem;
-            line-height: 1.2;
+            font-size: 2.2rem; font-weight: 700;
+            color: var(--ink); margin-bottom: 0.5rem; line-height: 1.2;
         }
 
-        .modal-content p {
-            font-size: 0.95rem;
-            color: var(--ink-muted);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
+        .modal-content p { font-size: 0.95rem; color: var(--ink-muted); margin-bottom: 2rem; line-height: 1.6; }
 
         .modal-input {
             width: 100%;
             padding: 1rem 1.2rem;
             border: 2px solid var(--divider);
             border-radius: 8px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1rem;
-            color: var(--ink);
-            background: var(--parchment);
-            margin-bottom: 1.5rem;
-            outline: none;
+            font-family: 'DM Sans', sans-serif; font-size: 1rem;
+            color: var(--ink); background: var(--parchment);
+            margin-bottom: 0.75rem; outline: none;
             transition: all 0.2s ease;
         }
+        .modal-input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(201,146,42,0.15); }
+        .modal-input::placeholder { color: var(--ink-muted); opacity: 0.6; }
+        .modal-input.error-shake { animation: shake 0.4s ease; border-color: var(--ruby); }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-        .modal-input:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 4px rgba(201,146,42,0.15);
-        }
-
-        .modal-input::placeholder {
-            color: var(--ink-muted);
-            opacity: 0.6;
-        }
+        .modal-error { color: var(--ruby); font-size: 0.82rem; min-height: 18px; margin-bottom: 0.75rem; }
 
         .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: var(--ink-muted);
-            line-height: 1;
-            padding: 8px;
-            transition: color 0.2s, transform 0.2s;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            z-index: 10;
+            position: absolute; top: 16px; right: 16px;
+            background: none; border: none;
+            font-size: 1.8rem; cursor: pointer;
+            color: var(--ink-muted); line-height: 1; padding: 8px;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: color 0.2s, transform 0.2s;
         }
+        .modal-close:hover { color: var(--ink); transform: rotate(90deg); }
 
-        .modal-close:hover { 
-            color: var(--ink); 
-            transform: rotate(90deg);
+        .modal-footer { display: flex; gap: 12px; justify-content: center; margin-top: 0.5rem; flex-wrap: wrap; }
+        .modal-footer .btn { padding: 0.9rem 1.8rem; font-size: 1rem; border-radius: 8px; }
+
+        .modal-hint { display: block; margin-top: 1.5rem; font-size: 0.8rem; color: var(--ink-muted); border-top: 1px solid var(--divider); padding-top: 1.2rem; }
+
+        /* ── Confirm Dialog ── */
+        .confirm-overlay {
+            position: fixed; inset: 0;
+            background: rgba(12,10,8,0.82);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000; padding: 1rem;
+            animation: fadeIn 0.2s ease;
         }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 0.5rem;
+        .confirm-box {
+            background: var(--cream);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            max-width: 400px; width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px var(--shadow-deep);
+            border-top: 4px solid var(--ruby);
+            animation: modalIn 0.25s ease;
         }
+        .confirm-box .confirm-icon { font-size: 3rem; color: var(--ruby); margin-bottom: 1rem; }
+        .confirm-box h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--ink); }
+        .confirm-box p { color: var(--ink-muted); margin-bottom: 2rem; font-size: 0.92rem; line-height: 1.6; }
+        .confirm-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-        .modal-footer .btn {
-            padding: 0.9rem 1.8rem;
-            font-size: 1rem;
+        /* ── Confirm Overlay ── */
+        .confirm-overlay {
+            position: fixed; inset: 0;
+            background: rgba(12,10,8,0.82);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000; padding: 1rem;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+        .confirm-box {
+            background: var(--cream);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            max-width: 420px; width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px var(--shadow-deep);
+            border-top: 4px solid var(--amber);
+            animation: modalIn 0.25s ease;
+        }
+        .confirm-box--danger {
+            border-top-color: var(--ruby);
+        }
+        .confirm-box .confirm-icon { font-size: 3rem; color: var(--amber); margin-bottom: 0.75rem; }
+        .confirm-box .confirm-icon--danger { color: var(--ruby); }
+        .confirm-box h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 0.75rem; color: var(--ink); }
+        .confirm-box p { color: var(--ink-muted); margin-bottom: 1.2rem; font-size: 0.93rem; line-height: 1.7; }
+
+        .confirm-security-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 0.3rem 0.9rem;
+            border-radius: 20px;
+            background: var(--ruby-pale);
+            color: var(--ruby);
+            border: 1px solid rgba(139,26,26,0.2);
+            font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            margin-bottom: 1.1rem;
+        }
+        body.dark .confirm-security-badge { background: var(--ruby-pale); color: var(--ruby); }
+
+        .confirm-warning-box {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: var(--ruby-pale);
+            border: 1px solid rgba(139,26,26,0.18);
             border-radius: 8px;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1.8rem;
+            font-size: 0.85rem;
+            color: var(--ruby);
+            text-align: left;
+            line-height: 1.5;
         }
+        .confirm-warning-box i { margin-top: 2px; flex-shrink: 0; }
+        body.dark .confirm-warning-box { background: var(--ruby-pale); border-color: rgba(224,82,82,0.2); color: var(--ruby); }
 
-        .modal-hint {
-            display: block;
-            margin-top: 1.5rem;
-            font-size: 0.8rem;
-            color: var(--ink-muted);
-            border-top: 1px solid var(--divider);
-            padding-top: 1.2rem;
-        }
+        .confirm-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-        /* Toast messages */
+        /* fix text input inside modal */
+        .modal-input[type="text"] { max-width: 100%; }
+
+        /* ── Toasts ── */
         .toast-loading, .toast-notification {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
+            position: fixed; bottom: 2rem; right: 2rem;
             padding: 0.9rem 1.6rem;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-            font-weight: 500;
+            display: flex; align-items: center; gap: 12px;
+            font-size: 0.95rem; font-weight: 500;
             box-shadow: 0 10px 30px var(--shadow-deep);
             z-index: 10000;
             animation: toastIn 0.25s ease;
             max-width: 90vw;
         }
+        @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
 
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        .toast-loading { background: var(--ink); color: var(--parchment); }
+        .toast-notification { background: var(--emerald); color: white; }
+        .toast-notification.error { background: var(--ruby); }
 
-        .toast-loading {
-            background: var(--ink);
-            color: var(--parchment);
-        }
-
-        .toast-notification {
-            background: var(--emerald);
-            color: white;
-        }
-
-        .toast-notification.error {
-            background: var(--ruby);
-        }
-
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            flex-shrink: 0;
-        }
-
-        @keyframes spin {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .hidden { display: none !important; }
+
+        /* Row flash on change */
+        @keyframes rowFlash { 0%,100%{background:transparent} 50%{background:var(--gold-faint)} }
+        .row-changed { animation: rowFlash 0.5s ease; }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -690,39 +501,18 @@
         ::-webkit-scrollbar-thumb { background: var(--gold-pale); border-radius: 20px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
-        /* Responsive */
-        @media (max-width: 860px) {
-            .stat-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
+        /* ── Responsive ── */
+        @media (max-width: 860px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) {
             body { padding: 1.5rem 1rem 3rem; }
             .title h1 { font-size: 1.9rem; }
             .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
             .admin-bar { flex-direction: column; align-items: flex-start; }
-            
-            .modal-content {
-                padding: 2rem 1.5rem 1.8rem;
-                max-width: 95%;
-            }
-            
-            .modal-content h2 {
-                font-size: 1.8rem;
-            }
-            
-            .modal-close {
-                top: 8px;
-                right: 8px;
-            }
-            
-            .toast-loading, .toast-notification {
-                bottom: 1rem;
-                right: 1rem;
-                left: 1rem;
-                max-width: none;
-            }
+            .modal-content { padding: 2rem 1.5rem 1.8rem; max-width: 95%; }
+            .modal-content h2 { font-size: 1.8rem; }
+            .modal-close { top: 8px; right: 8px; }
+            .toast-loading, .toast-notification { bottom: 1rem; right: 1rem; left: 1rem; max-width: none; }
         }
-
         @media (max-width: 380px) {
             .stat-grid { grid-template-columns: 1fr; }
             .title h1 { font-size: 1.6rem; }
@@ -731,33 +521,68 @@
 </head>
 <body>
 
-<!-- Loading & Notification Toasts -->
+<!-- Toasts -->
 <div id="loadingSpinner" class="toast-loading hidden">
-    <span class="spinner"></span> <span>updating...</span>
+    <span class="spinner"></span> <span>Updating…</span>
 </div>
 <div id="notification" class="toast-notification hidden">
     <i class="fa-regular fa-circle-check"></i>
     <span id="notificationMessage"></span>
 </div>
 
-<div class="dashboard" id="dashboard">
+<!-- Add Contact Modal (Super Admin only) -->
+<div class="modal-overlay hidden" id="addContactModal">
+    <div class="modal-content" id="addContactContent">
+        <button class="modal-close" id="closeAddContactBtn" aria-label="Close">&times;</button>
+        <div class="modal-icon"><i class="fas fa-user-plus"></i></div>
+        <h2>Add Contact</h2>
+        <p>Add a new member to the Iftar Party চান্দা list.</p>
+        <input type="text" class="modal-input" id="newMemberName" placeholder="Enter full name (Bengali or English)" autocomplete="off" style="margin-bottom:0.75rem;">
+        <div class="modal-error" id="addContactError"></div>
+        <div class="modal-footer">
+            <button class="btn btn-gold" id="confirmAddContactBtn"><i class="fas fa-plus"></i> Add Member</button>
+            <button class="btn" id="cancelAddContactBtn"><i class="fas fa-times"></i> Cancel</button>
+        </div>
+    </div>
+</div>
 
-    <!-- FIXED MODAL (Login Popup) -->
+<!-- Confirm Reset (Super Admin only) -->
+<div class="confirm-overlay hidden" id="confirmResetOverlay">
+    <div class="confirm-box confirm-box--danger">
+        <div class="confirm-icon confirm-icon--danger"><i class="fas fa-shield-alt"></i></div>
+        <div class="confirm-security-badge"><i class="fas fa-lock"></i> Security Warning</div>
+        <h3>Are you sure?</h3>
+        <p>You are about to <strong>delete all data</strong> on this website.<br>This will permanently reset every member's payment status and clear all notes.</p>
+        <div class="confirm-warning-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            This action <strong>cannot be undone</strong>. All payment records will be lost.
+        </div>
+        <div class="confirm-actions">
+            <button class="btn btn-danger" id="confirmResetBtn"><i class="fas fa-trash-alt"></i> Yes, Delete All Data</button>
+            <button class="btn btn-outline" id="cancelResetBtn"><i class="fas fa-times"></i> Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard">
+
+    <!-- Welcome Modal -->
     <div class="modal-overlay" id="welcomeModal">
-        <div class="modal-content">
+        <div class="modal-content" id="modalContent">
             <button class="modal-close" id="closeModalBtn" aria-label="Close">&times;</button>
             <div class="modal-icon"><i class="fas fa-star-and-crescent"></i></div>
             <h2>🌙 أهلًا</h2>
             <p>Welcome to the Iftar Party<br>চান্দা Website</p>
-            <input type="password" class="modal-input" id="adminPasswordInput" placeholder="Enter password" value="" autocomplete="off">
+            <input type="password" class="modal-input" id="adminPasswordInput" placeholder="Enter password (Admin / Super Admin)" autocomplete="off">
+            <div class="modal-error" id="modalError"></div>
             <div class="modal-footer">
                 <button class="btn btn-gold" id="submitAdminBtn"><i class="fas fa-key"></i> Login as Admin</button>
             </div>
-            <small class="modal-hint">(click × to continue as normal user)</small>
+            <small class="modal-hint">(click × or press Enter with blank field to continue as normal user)</small>
         </div>
     </div>
 
-    <!-- header -->
+    <!-- Header -->
     <div class="header-section">
         <div class="title">
             <h1><i class="fas fa-moon moon-icon"></i> Iftar Party চান্দা List</h1>
@@ -769,24 +594,47 @@
         </div>
     </div>
 
-    <!-- stats cards -->
-    <div class="stat-grid" id="statGrid">
-        <div class="stat-item"><i class="fas fa-users"></i><div class="stat-label">Total members</div><div class="stat-number" id="totalMembers">20</div></div>
-        <div class="stat-item"><i class="fas fa-check-circle"></i><div class="stat-label">Paid</div><div class="stat-number" id="totalPaid">0</div></div>
-        <div class="stat-item"><i class="fas fa-hourglass-half"></i><div class="stat-label">Pending</div><div class="stat-number" id="totalPending">0</div></div>
-        <div class="stat-item"><i class="fas fa-coins"></i><div class="stat-label">Collected (BDT)</div><div class="stat-number" id="totalCollected">0</div></div>
-    </div>
-
-    <!-- admin bar & actions -->
-    <div class="admin-bar">
-        <div class="role-tag" id="roleDisplay"><i class="fas fa-user"></i> Normal user (view only)</div>
-        <div class="admin-actions" id="adminActions">
-            <button class="btn btn-gold" id="saveChangesBtn"><i class="fas fa-save"></i> Save changes</button>
-            <button class="btn btn-outline" id="resetStatusBtn"><i class="fas fa-undo-alt"></i> Reset all status</button>
+    <!-- Stats -->
+    <div class="stat-grid">
+        <div class="stat-item">
+            <i class="fas fa-users"></i>
+            <div class="stat-label">Total Members</div>
+            <div class="stat-number" id="totalMembers">20</div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-check-circle"></i>
+            <div class="stat-label">Paid</div>
+            <div class="stat-number" id="totalPaid">0</div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-hourglass-half"></i>
+            <div class="stat-label">Pending</div>
+            <div class="stat-number" id="totalPending">0</div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-coins"></i>
+            <div class="stat-label">Collected (BDT)</div>
+            <div class="stat-number" id="totalCollected">0</div>
         </div>
     </div>
 
-    <!-- table glass card -->
+    <!-- Admin Bar -->
+    <div class="admin-bar">
+        <div class="role-tag user-role" id="roleDisplay">
+            <i class="fas fa-user"></i> Normal user (view only)
+        </div>
+        <div class="admin-actions-wrap">
+            <div id="adminActions" style="display:none;gap:10px;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-gold" id="saveChangesBtn"><i class="fas fa-save"></i> Save changes</button>
+            </div>
+            <div id="superAdminActions" style="display:none;gap:10px;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-outline" id="resetStatusBtn"><i class="fas fa-undo-alt"></i> Reset all status</button>
+                <button class="btn" id="addContactBtn" style="background:var(--emerald);color:#fff;border-color:var(--emerald);font-weight:600;"><i class="fas fa-user-plus"></i> Add Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
     <div class="table-wrapper">
         <table id="memberTable">
             <thead>
@@ -799,362 +647,424 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- js inject -->
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:3rem;color:var(--ink-muted);">
+                        <span class="spinner" style="display:inline-block;margin-right:10px;border-color:rgba(201,146,42,0.3);border-top-color:var(--gold);"></span>
+                        Connecting to Firebase…
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
-</div>
+
+</div><!-- /.dashboard -->
 
 <script>
-    (function() {
-        // ---------- Firebase Configuration ----------
-        const firebaseConfig = {
-            apiKey: "AIzaSyA1D-kdhCI5G35nI1T-umD9hQioUNy2OQE",
-            authDomain: "ifter-chanda.firebaseapp.com",
-            projectId: "ifter-chanda",
-            storageBucket: "ifter-chanda.firebasestorage.app",
-            messagingSenderId: "610812036162",
-            appId: "1:610812036162:web:7b553100d972125d76d9db",
-            measurementId: "G-9XGC4R1TZV"
-        };
+(function () {
+    // ── Firebase ──
+    const firebaseConfig = {
+        apiKey: "AIzaSyA1D-kdhCI5G35nI1T-umD9hQioUNy2OQE",
+        authDomain: "ifter-chanda.firebaseapp.com",
+        projectId: "ifter-chanda",
+        storageBucket: "ifter-chanda.firebasestorage.app",
+        messagingSenderId: "610812036162",
+        appId: "1:610812036162:web:7b553100d972125d76d9db",
+        measurementId: "G-9XGC4R1TZV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    // ── Constants ──
+    const ADMIN_PASSWORD       = "Chanda_de";
+    const SUPER_ADMIN_PASSWORD = "Chanda_dela";
+    const AMOUNT = 400;
 
-        // ---------- member list ----------
-        const memberNames = [
-            "খালিদ বিন শামীম (আদি)", "প্রতীক দাস", "কাজী আরাফাত", "তানভীর আলম", "সাইফুর রহমান",
-            "নাঈম", "শিশির আহমেদ এমরান", "আব্দুল্লাহ", "ফাহাদ", "সাহিদুল",
-            "শেখ সাদ", "তানিম মোল্লা", "সাকিব মোল্লা", "তায়েফ আহমদ", "রিয়াদ",
-            "নিরব", "সাগর", "রাফি", "সামাদ", "শিহাব"
-        ];
+    const memberNames = [
+        "খালিদ বিন শামীম (আদি)", "প্রতীক দাস", "কাজী আরাফাত", "তানভীর আলম", "সাইফুর রহমান",
+        "নাঈম", "শিশির আহমেদ এমরান", "আব্দুল্লাহ", "ফাহাদ", "সাহিদুল",
+        "শেখ সাদ", "তানিম মোল্লা", "সাকিব মোল্লা", "তায়েফ আহমদ", "রিয়াদ",
+        "নিরব", "সাগর", "রাফি", "সামাদ", "শিহাব"
+    ];
 
-        const AMOUNT = 400;
-        let members = [];
-        let adminLevel = null; // 'super', 'normal', or null
-        
-        // পাসওয়ার্ড ডিফাইন
-        const ADMIN_PASSWORD = "Chanda_de";        // সাধারণ এডমিন
-        const SUPER_ADMIN_PASSWORD = "Chanda_dela"; // সুপার এডমিন
-        
-        // Track pending changes (for Save button)
-        let pendingUpdates = new Map();
+    // ── State ──
+    let members = [];
+    let adminLevel = null; // null | 'normal' | 'super'
+    let pendingUpdates = new Map();
 
-        // DOM elements
-        const modal = document.getElementById('welcomeModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const adminPassInput = document.getElementById('adminPasswordInput');
-        const submitAdminBtn = document.getElementById('submitAdminBtn');
-        const roleDisplay = document.getElementById('roleDisplay');
-        const adminActionsDiv = document.getElementById('adminActions');
-        const tableBody = document.getElementById('tableBody');
-        const darkToggle = document.getElementById('darkModeToggle');
-        const modeIcon = document.getElementById('modeIcon');
-        const modeText = document.getElementById('modeText');
-        const saveBtn = document.getElementById('saveChangesBtn');
-        const resetBtn = document.getElementById('resetStatusBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const notification = document.getElementById('notification');
-        const notifMsg = document.getElementById('notificationMessage');
+    // ── DOM refs ──
+    const modal               = document.getElementById('welcomeModal');
+    const modalContent        = document.getElementById('modalContent');
+    const closeModalBtn       = document.getElementById('closeModalBtn');
+    const adminPassInput      = document.getElementById('adminPasswordInput');
+    const submitAdminBtn      = document.getElementById('submitAdminBtn');
+    const modalError          = document.getElementById('modalError');
+    const roleDisplay         = document.getElementById('roleDisplay');
+    const adminActionsDiv     = document.getElementById('adminActions');
+    const superActionsDiv     = document.getElementById('superAdminActions');
+    const tableBody           = document.getElementById('tableBody');
+    const darkToggle          = document.getElementById('darkModeToggle');
+    const modeIcon            = document.getElementById('modeIcon');
+    const modeText            = document.getElementById('modeText');
+    const saveBtn             = document.getElementById('saveChangesBtn');
+    const resetBtn            = document.getElementById('resetStatusBtn');
+    const addContactBtn       = document.getElementById('addContactBtn');
+    const addContactModal     = document.getElementById('addContactModal');
+    const addContactContent   = document.getElementById('addContactContent');
+    const closeAddContactBtn  = document.getElementById('closeAddContactBtn');
+    const confirmAddContactBtn= document.getElementById('confirmAddContactBtn');
+    const cancelAddContactBtn = document.getElementById('cancelAddContactBtn');
+    const confirmResetOverlay = document.getElementById('confirmResetOverlay');
+    const confirmResetBtn     = document.getElementById('confirmResetBtn');
+    const cancelResetBtn      = document.getElementById('cancelResetBtn');
+    const spinner             = document.getElementById('loadingSpinner');
+    const notifEl             = document.getElementById('notification');
+    const notifMsg            = document.getElementById('notificationMessage');
+    const statTotal           = document.getElementById('totalMembers');
+    const statPaid            = document.getElementById('totalPaid');
+    const statPending         = document.getElementById('totalPending');
+    const statCollected       = document.getElementById('totalCollected');
 
-        // stat spans
-        const totalMembersSpan = document.getElementById('totalMembers');
-        const totalPaidSpan = document.getElementById('totalPaid');
-        const totalPendingSpan = document.getElementById('totalPending');
-        const totalCollectedSpan = document.getElementById('totalCollected');
+    // ── Helpers ──
+    function escHtml(s) {
+        return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
-        // ---------- Helper Functions ----------
-        function showNotif(msg, isError = false) {
-            notifMsg.innerText = msg;
-            notification.classList.remove('hidden');
-            notification.classList.remove('error');
-            if (isError) {
-                notification.classList.add('error');
-                notification.style.background = '#b13e3e';
-            } else {
-                notification.style.background = '#059669';
-            }
-            setTimeout(() => notification.classList.add('hidden'), 2500);
-        }
+    function showNotif(msg, isError = false) {
+        notifMsg.textContent = msg;
+        notifEl.classList.remove('hidden', 'error');
+        if (isError) notifEl.classList.add('error');
+        notifEl.style.animation = 'none';
+        void notifEl.offsetWidth;
+        notifEl.style.animation = 'toastIn 0.25s ease';
+        clearTimeout(notifEl._timer);
+        notifEl._timer = setTimeout(() => notifEl.classList.add('hidden'), 3200);
+    }
 
-        function setLoading(show) {
-            if (show) loadingSpinner.classList.remove('hidden');
-            else loadingSpinner.classList.add('hidden');
-        }
+    function setLoading(show) {
+        show ? spinner.classList.remove('hidden') : spinner.classList.add('hidden');
+    }
 
-        function computeStats() {
-            const paid = members.filter(m => m.status === 'Paid').length;
-            const loading = members.filter(m => m.status === 'Loading').length;
-            const no = members.filter(m => m.status === 'No').length;
-            const collected = paid * AMOUNT;
-            return { paid, loading, no, collected };
-        }
+    function animateNum(el, to) {
+        const from = parseInt(el.textContent.replace(/,/g,'')) || 0;
+        if (from === to) return;
+        const steps = 20, dur = 380;
+        let i = 0;
+        clearInterval(el._anim);
+        el._anim = setInterval(() => {
+            i++;
+            el.textContent = Math.round(from + (to - from) * (i / steps)).toLocaleString();
+            if (i >= steps) { el.textContent = to.toLocaleString(); clearInterval(el._anim); }
+        }, dur / steps);
+    }
 
-        function updateStatCards() {
-            const stats = computeStats();
-            totalMembersSpan.innerText = members.length;
-            totalPaidSpan.innerText = stats.paid;
-            totalPendingSpan.innerText = stats.loading + stats.no;
-            totalCollectedSpan.innerText = stats.collected;
-        }
+    function updateStats() {
+        const paid = members.filter(m => m.status === 'Paid').length;
+        animateNum(statTotal,     members.length);
+        animateNum(statPaid,      paid);
+        animateNum(statPending,   members.length - paid);
+        animateNum(statCollected, paid * AMOUNT);
+    }
 
-        // ---------- Firebase Functions ----------
-        async function initializeFirestore() {
-            const snapshot = await db.collection('members').get();
-            if (snapshot.empty) {
-                const batch = db.batch();
-                memberNames.forEach((name, index) => {
-                    const docRef = db.collection('members').doc(`member_${index + 1}`);
-                    batch.set(docRef, {
-                        name: name,
-                        amount: AMOUNT,
-                        status: 'No',
-                        notes: '',
-                        serial: index + 1
-                    });
+    // ── Firebase ──
+    async function initFirestore() {
+        const snap = await db.collection('members').get();
+        if (snap.empty) {
+            const batch = db.batch();
+            memberNames.forEach((name, i) => {
+                batch.set(db.collection('members').doc(`member_${i + 1}`), {
+                    name, amount: AMOUNT, status: 'No', notes: '', serial: i + 1
                 });
-                await batch.commit();
-                console.log('Initial members added to Firestore');
-            }
-        }
-
-        function listenToFirestore() {
-            db.collection('members').orderBy('serial').onSnapshot((snapshot) => {
-                members = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                pendingUpdates.clear(); // Clear pending when new data arrives
-                renderTable();
-                updateStatCards();
             });
+            await batch.commit();
         }
+    }
 
-        // ---------- Render Table ----------
-        function renderTable() {
-            let html = '';
-            members.forEach((member) => {
-                const serial = member.serial;
-                const pending = pendingUpdates.get(member.id) || {};
-                const currentStatus = pending.status !== undefined ? pending.status : member.status;
-                const currentNotes = pending.notes !== undefined ? pending.notes : (member.notes || '');
-
-                const statusClass = 
-                    currentStatus === 'Paid' ? 'status-paid' : 
-                    currentStatus === 'Loading' ? 'status-loading' : 'status-no';
-
-                // এডমিন লেভেল চেক (সুপার এডমিন বা সাধারণ এডমিন)
-                if (adminLevel === 'super' || adminLevel === 'normal') {
-                    html += `<tr>
-                        <td>${serial}</td>
-                        <td>${member.name}</td>
-                        <td>${AMOUNT} BDT</td>
-                        <td>
-                            <select class="status-select" data-id="${member.id}">
-                                <option value="Paid" ${currentStatus === 'Paid' ? 'selected' : ''}>Paid</option>
-                                <option value="Loading" ${currentStatus === 'Loading' ? 'selected' : ''}>Loading</option>
-                                <option value="No" ${currentStatus === 'No' ? 'selected' : ''}>No</option>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="text" class="notes-input" data-id="${member.id}" placeholder="optional note" value="${currentNotes}">
-                        </td>
-                    </tr>`;
-                } else {
-                    html += `<tr>
-                        <td>${serial}</td>
-                        <td>${member.name}</td>
-                        <td>${AMOUNT} BDT</td>
-                        <td><span class="status-badge ${statusClass}">${currentStatus}</span></td>
-                        <td>${currentNotes ? currentNotes : '—'}</td>
-                    </tr>`;
-                }
-            });
-            tableBody.innerHTML = html;
-
-            // Add event listeners for admin inputs
-            if (adminLevel === 'super' || adminLevel === 'normal') {
-                document.querySelectorAll('.status-select').forEach(select => {
-                    select.addEventListener('change', (e) => {
-                        const memberId = e.target.dataset.id;
-                        const newStatus = e.target.value;
-                        const currentPending = pendingUpdates.get(memberId) || {};
-                        pendingUpdates.set(memberId, { ...currentPending, status: newStatus });
-                        // Visual feedback
-                        e.target.closest('tr').style.backgroundColor = '#fef9c3';
-                        setTimeout(() => e.target.closest('tr').style.backgroundColor = '', 500);
-                    });
-                });
-
-                document.querySelectorAll('.notes-input').forEach(input => {
-                    input.addEventListener('change', (e) => {
-                        const memberId = e.target.dataset.id;
-                        const newNotes = e.target.value;
-                        const currentPending = pendingUpdates.get(memberId) || {};
-                        pendingUpdates.set(memberId, { ...currentPending, notes: newNotes });
-                        // Visual feedback
-                        e.target.closest('tr').style.backgroundColor = '#fef9c3';
-                        setTimeout(() => e.target.closest('tr').style.backgroundColor = '', 500);
-                    });
-                });
-            }
-        }
-
-        // ---------- Save Changes to Firebase ----------
-        async function saveAllChanges() {
-            if (!adminLevel || pendingUpdates.size === 0) {
-                showNotif('No changes to save');
-                return;
-            }
-
-            setLoading(true);
-            try {
-                const batch = db.batch();
-                for (let [memberId, changes] of pendingUpdates.entries()) {
-                    const docRef = db.collection('members').doc(memberId);
-                    batch.update(docRef, changes);
-                }
-                await batch.commit();
-                pendingUpdates.clear();
-                showNotif('All changes saved successfully');
-            } catch (error) {
-                showNotif('Error saving changes', true);
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        // ---------- Reset All Status ----------
-        async function resetAllStatus() {
-            // শুধু সুপার এডমিন এই কাজ করতে পারবে
-            if (adminLevel !== 'super') {
-                showNotif('Only Super Admin can reset all status!', true);
-                return;
-            }
-            
-            if (!confirm('Reset all status to "No" and clear notes? (Super Admin only)')) return;
-
-            setLoading(true);
-            try {
-                const batch = db.batch();
-                members.forEach(member => {
-                    batch.update(db.collection('members').doc(member.id), { 
-                        status: 'No', 
-                        notes: '' 
-                    });
-                });
-                await batch.commit();
-                pendingUpdates.clear();
-                showNotif('All status reset by Super Admin');
-            } catch (error) {
-                showNotif('Reset error', true);
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        // ---------- Set Admin Mode ----------
-        function setAdminMode(level) {
-            adminLevel = level;
-            
-            if (adminLevel === 'super') {
-                roleDisplay.innerHTML = '<i class="fas fa-crown"></i> Super Admin (full access)';
-                roleDisplay.classList.add('super');
-                adminActionsDiv.classList.remove('hidden');
-                resetBtn.disabled = false;
-                resetBtn.title = "Super Admin only - Reset all status";
-            } else if (adminLevel === 'normal') {
-                roleDisplay.innerHTML = '<i class="fas fa-user-shield"></i> Admin (edit only)';
-                roleDisplay.classList.remove('super');
-                adminActionsDiv.classList.remove('hidden');
-                resetBtn.disabled = true;
-                resetBtn.title = "Only Super Admin can reset all status";
-            } else {
-                roleDisplay.innerHTML = '<i class="fas fa-user"></i> Normal user (view only)';
-                roleDisplay.classList.remove('super');
-                adminActionsDiv.classList.add('hidden');
-            }
-            
+    function listenFirestore() {
+        db.collection('members').orderBy('serial').onSnapshot(snap => {
+            members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            pendingUpdates.clear();
             renderTable();
-        }
+            updateStats();
+        }, err => {
+            showNotif('Realtime sync error: ' + err.message, true);
+        });
+    }
 
-        function finalizeModal(level = null) {
-            setAdminMode(level);
-            modal.classList.add('hidden');
-            // Optional: remove overlay completely to prevent interaction issues
-            modal.style.visibility = 'hidden';
-            modal.style.opacity = '0';
-        }
+    // ── Render ──
+    function renderTable() {
+        const isAdmin = adminLevel === 'normal' || adminLevel === 'super';
+        let html = '';
 
-        // ---------- Event Listeners ----------
-        closeModalBtn.addEventListener('click', () => finalizeModal(null));
+        members.forEach(m => {
+            const pend   = pendingUpdates.get(m.id) || {};
+            const status = pend.status !== undefined ? pend.status : m.status;
+            const notes  = pend.notes  !== undefined ? pend.notes  : (m.notes || '');
+            const cls    = status === 'Paid' ? 'status-paid' : status === 'Loading' ? 'status-loading' : 'status-no';
 
-        submitAdminBtn.addEventListener('click', () => {
-            const pwd = adminPassInput.value.trim();
-            
-            if (pwd === SUPER_ADMIN_PASSWORD) {
-                finalizeModal('super');
-                showNotif('Welcome Super Admin!');
-            } else if (pwd === ADMIN_PASSWORD) {
-                finalizeModal('normal');
-                showNotif('Welcome Admin!');
-            } else if (pwd === '') {
-                finalizeModal(null);
+            if (isAdmin) {
+                html += `<tr data-id="${m.id}">
+                    <td>${m.serial}</td>
+                    <td>${escHtml(m.name)}</td>
+                    <td>${AMOUNT} BDT</td>
+                    <td>
+                        <select class="status-select" data-id="${m.id}">
+                            <option value="Paid"    ${status==='Paid'    ?'selected':''}>Paid</option>
+                            <option value="Loading" ${status==='Loading' ?'selected':''}>Loading</option>
+                            <option value="No"      ${status==='No'      ?'selected':''}>No</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="notes-input" data-id="${m.id}" placeholder="optional note…" value="${escHtml(notes)}">
+                    </td>
+                </tr>`;
             } else {
-                alert('Incorrect password. You continue as normal user.');
-                finalizeModal(null);
+                html += `<tr>
+                    <td>${m.serial}</td>
+                    <td>${escHtml(m.name)}</td>
+                    <td>${AMOUNT} BDT</td>
+                    <td><span class="status-badge ${cls}">${status}</span></td>
+                    <td>${notes ? escHtml(notes) : '—'}</td>
+                </tr>`;
             }
         });
 
-        // Allow clicking on overlay to close (with normal user mode)
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                finalizeModal(null);
-            }
+        tableBody.innerHTML = html || `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--ink-muted);">No data found.</td></tr>`;
+
+        if (isAdmin) {
+            tableBody.querySelectorAll('.status-select').forEach(sel => {
+                sel.addEventListener('change', e => {
+                    const id = e.target.dataset.id;
+                    pendingUpdates.set(id, { ...(pendingUpdates.get(id)||{}), status: e.target.value });
+                    flashRow(e.target.closest('tr'));
+                });
+            });
+            tableBody.querySelectorAll('.notes-input').forEach(inp => {
+                inp.addEventListener('input', e => {
+                    const id = e.target.dataset.id;
+                    pendingUpdates.set(id, { ...(pendingUpdates.get(id)||{}), notes: e.target.value });
+                });
+                inp.addEventListener('change', e => flashRow(e.target.closest('tr')));
+            });
+        }
+    }
+
+    function flashRow(tr) {
+        if (!tr) return;
+        tr.classList.remove('row-changed');
+        void tr.offsetWidth;
+        tr.classList.add('row-changed');
+        setTimeout(() => tr.classList.remove('row-changed'), 600);
+    }
+
+    // ── Save Changes ──
+    async function saveAllChanges() {
+        if (!adminLevel) return;
+        // Collect all current DOM values
+        tableBody.querySelectorAll('.status-select').forEach(sel => {
+            const id = sel.dataset.id;
+            pendingUpdates.set(id, { ...(pendingUpdates.get(id)||{}), status: sel.value });
+        });
+        tableBody.querySelectorAll('.notes-input').forEach(inp => {
+            const id = inp.dataset.id;
+            pendingUpdates.set(id, { ...(pendingUpdates.get(id)||{}), notes: inp.value });
         });
 
-        // Prevent modal content clicks from closing
-        document.querySelector('.modal-content').addEventListener('click', (e) => {
-            e.stopPropagation();
+        if (!pendingUpdates.size) { showNotif('No changes to save'); return; }
+
+        setLoading(true);
+        try {
+            const batch = db.batch();
+            pendingUpdates.forEach((changes, id) => {
+                batch.update(db.collection('members').doc(id), changes);
+            });
+            await batch.commit();
+            pendingUpdates.clear();
+            showNotif('✓ All changes saved successfully!');
+        } catch (e) {
+            showNotif('Error saving: ' + e.message, true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // ── Reset Status (Super Admin only) ──
+    async function resetAllStatus() {
+        if (adminLevel !== 'super') { showNotif('Only Super Admin can reset all status!', true); return; }
+        confirmResetOverlay.classList.remove('hidden');
+    }
+
+    async function doReset() {
+        confirmResetOverlay.classList.add('hidden');
+        setLoading(true);
+        try {
+            const batch = db.batch();
+            members.forEach(m => batch.update(db.collection('members').doc(m.id), { status: 'No', notes: '' }));
+            await batch.commit();
+            pendingUpdates.clear();
+            showNotif('✓ All statuses have been reset');
+        } catch (e) {
+            showNotif('Reset error: ' + e.message, true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // ── Add Contact (Super Admin only) ──
+    function openAddContact() {
+        if (adminLevel !== 'super') return;
+        document.getElementById('newMemberName').value = '';
+        document.getElementById('addContactError').textContent = '';
+        addContactModal.classList.remove('hidden');
+        addContactModal.style.opacity = '1';
+        addContactModal.style.pointerEvents = 'auto';
+        setTimeout(() => document.getElementById('newMemberName').focus(), 150);
+    }
+
+    function closeAddContact() {
+        addContactModal.style.opacity = '0';
+        addContactModal.style.pointerEvents = 'none';
+        setTimeout(() => addContactModal.classList.add('hidden'), 280);
+    }
+
+    async function doAddContact() {
+        const nameEl = document.getElementById('newMemberName');
+        const errEl  = document.getElementById('addContactError');
+        const name   = nameEl.value.trim();
+
+        if (!name) {
+            errEl.textContent = '✗ Please enter a name.';
+            nameEl.classList.add('error-shake');
+            nameEl.style.borderColor = 'var(--ruby)';
+            setTimeout(() => { nameEl.classList.remove('error-shake'); nameEl.style.borderColor = ''; errEl.textContent = ''; }, 2200);
+            return;
+        }
+
+        // Check duplicate
+        if (members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+            errEl.textContent = '✗ A member with this name already exists.';
+            return;
+        }
+
+        setLoading(true);
+        closeAddContact();
+        try {
+            const nextSerial = members.length > 0 ? Math.max(...members.map(m => m.serial || 0)) + 1 : 1;
+            const newId = `member_${nextSerial}_${Date.now()}`;
+            await db.collection('members').doc(newId).set({
+                name,
+                amount: AMOUNT,
+                status: 'No',
+                notes: '',
+                serial: nextSerial
+            });
+            showNotif(`✓ "${name}" added successfully!`);
+        } catch (e) {
+            showNotif('Error adding contact: ' + e.message, true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // ── Role Setup ──
+    function setAdminMode(level) {
+        adminLevel = level;
+        roleDisplay.className = 'role-tag';
+        adminActionsDiv.style.display = 'none';
+        superActionsDiv.style.display = 'none';
+
+        if (level === 'super') {
+            roleDisplay.innerHTML = '<i class="fas fa-crown"></i> Super Admin (full access)';
+            roleDisplay.classList.add('super');
+            adminActionsDiv.style.display = 'flex';
+            superActionsDiv.style.display = 'flex';
+        } else if (level === 'normal') {
+            roleDisplay.innerHTML = '<i class="fas fa-user-shield"></i> Admin (edit only)';
+            adminActionsDiv.style.display = 'flex';
+        } else {
+            roleDisplay.innerHTML = '<i class="fas fa-user"></i> Normal user (view only)';
+            roleDisplay.classList.add('user-role');
+        }
+
+        renderTable();
+    }
+
+    function closeModal(level) {
+        setAdminMode(level);
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        setTimeout(() => { modal.classList.add('hidden'); }, 300);
+    }
+
+    function tryLogin() {
+        const pwd = adminPassInput.value.trim();
+        if (pwd === SUPER_ADMIN_PASSWORD) {
+            closeModal('super');
+            showNotif('🌟 Welcome Super Admin!');
+        } else if (pwd === ADMIN_PASSWORD) {
+            closeModal('normal');
+            showNotif('✓ Welcome Admin!');
+        } else if (pwd === '') {
+            closeModal(null);
+        } else {
+            modalError.textContent = '✗ Incorrect password. Please try again.';
+            adminPassInput.classList.add('error-shake');
+            adminPassInput.style.borderColor = 'var(--ruby)';
+            setTimeout(() => {
+                adminPassInput.classList.remove('error-shake');
+                adminPassInput.style.borderColor = '';
+                modalError.textContent = '';
+            }, 2500);
+        }
+    }
+
+    // ── Events ──
+    closeModalBtn.addEventListener('click', () => closeModal(null));
+    submitAdminBtn.addEventListener('click', tryLogin);
+    adminPassInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(null); });
+    modalContent.addEventListener('click', e => e.stopPropagation());
+
+    darkToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        modeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+        modeText.textContent = isDark ? 'Dark' : 'Light';
+    });
+
+    saveBtn.addEventListener('click', saveAllChanges);
+    resetBtn.addEventListener('click', resetAllStatus);
+
+    // Confirm reset overlay
+    confirmResetBtn.addEventListener('click', doReset);
+    cancelResetBtn.addEventListener('click', () => confirmResetOverlay.classList.add('hidden'));
+    confirmResetOverlay.addEventListener('click', e => { if (e.target === confirmResetOverlay) confirmResetOverlay.classList.add('hidden'); });
+
+    // Add Contact
+    addContactBtn.addEventListener('click', openAddContact);
+    closeAddContactBtn.addEventListener('click', closeAddContact);
+    cancelAddContactBtn.addEventListener('click', closeAddContact);
+    confirmAddContactBtn.addEventListener('click', doAddContact);
+    addContactModal.addEventListener('click', e => { if (e.target === addContactModal) closeAddContact(); });
+    addContactContent.addEventListener('click', e => e.stopPropagation());
+    document.getElementById('newMemberName').addEventListener('keydown', e => { if (e.key === 'Enter') doAddContact(); });
+
+    // ── Init ──
+    statTotal.textContent = memberNames.length;
+    modal.classList.remove('hidden');
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
+    setTimeout(() => adminPassInput.focus(), 150);
+
+    initFirestore()
+        .then(() => listenFirestore())
+        .catch(e => {
+            showNotif('Firebase error: ' + e.message, true);
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:3rem;color:var(--ruby);">
+                <i class="fas fa-exclamation-triangle"></i> Could not connect to Firebase.
+            </td></tr>`;
         });
 
-        // Dark mode toggle
-        darkToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            modeIcon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
-            modeText.innerText = isDark ? 'Dark' : 'Light';
-            darkToggle.blur();
-        });
-
-        saveBtn.addEventListener('click', saveAllChanges);
-        resetBtn.addEventListener('click', resetAllStatus);
-
-        // Handle Enter key in password input
-        adminPassInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                submitAdminBtn.click();
-            }
-        });
-
-        // ---------- Initialize App ----------
-        initializeFirestore().then(() => {
-            listenToFirestore();
-        });
-
-        // Initial render
-        totalMembersSpan.innerText = memberNames.length;
-        updateStatCards();
-        
-        // Ensure modal is visible on page load
-        modal.classList.remove('hidden');
-        modal.style.visibility = 'visible';
-        modal.style.opacity = '1';
-        adminPassInput.focus();
-    })();
+})();
 </script>
 </body>
 </html>
